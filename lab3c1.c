@@ -47,8 +47,16 @@ int main(int argc, char *argv[]){
     if(world_rank==0) for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, world_rank, 123+idx+1, MPI_COMM_WORLD, &request[idx]);
     // printf("here4q\n");
     else MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request2);
-    if(world_rank==0) MPI_Waitall(world_size-1, request, status); 
-    else MPI_Wait(&request2, &status2); 
+    if(world_rank==0){
+        printf("Waiting to receive everything \n");
+        MPI_Waitall(world_size-1, request, status); 
+        printf("Received everything \n");
+    } 
+    else{
+        printf("Waiting to send %d \n", world_rank);
+        MPI_Wait(&request2, &status2); 
+        printf("Sent %d \n",world_rank);
+    } 
     MPI_Barrier(MPI_COMM_WORLD);
     if(world_rank==0){
         for(int i=0;i<C;i++){
