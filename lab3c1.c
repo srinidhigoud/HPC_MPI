@@ -35,13 +35,18 @@ int main(int argc, char *argv[]){
     else{
         // printf("here2\n");
         I_sub = (double*)malloc(sizeof(double)*C*H*W);
+        printf("Input %d\n",world_rank);
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
                 for(int k=0;k<W;k++) {
                     I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
+                    printf("%lf ",I_sub[i*H*W+j*W+k]);
                 }
+                printf("\n");
             }
+            printf("\n");
         }
+        printf("\n");
     }
     // printf("here3\n");
     if(world_rank==0) for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123+idx+1, MPI_COMM_WORLD, &request[idx]);
