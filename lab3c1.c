@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
     MPI_Status status2[(world_size-1)];
     double *buff;
     // printf("here\n");
-    printf("%d \n", world_rank);
+    printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double*)*(world_size-1)*C*H*W);
