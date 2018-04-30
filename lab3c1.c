@@ -9,7 +9,7 @@
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
     double checksum = 0;
-    double ***I_sub, ***O;
+    double *I_sub, *O;
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
