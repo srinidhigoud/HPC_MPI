@@ -37,7 +37,6 @@ int main(int argc, char *argv[]){
         I_sub = (double*)malloc(sizeof(double)*C*H*W);
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
-                buff[world_rank-1][i*H*W+j*W] = (double*)malloc(sizeof(double)*W);
                 for(int k=0;k<W;k++) {
                     I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
                 }
@@ -66,8 +65,8 @@ int main(int argc, char *argv[]){
     for(int i=0;i<C;i++){
         for(int j=0;j<W;j++) {
             for(int k=0;k<H;k++) {
-                checksum += O[i][j][k];
-                printf("%lf ",O[i][j][k]);
+                checksum += O[i*H*W+j*W+k] ;
+                printf("%lf ",O[i*H*W+j*W+k] );
             }
             printf("\n");
         }
