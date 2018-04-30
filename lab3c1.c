@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
-    
+    double checksum = 0;
     double ***I_sub, ***O;
     double ****buff = (double****)malloc(sizeof(double***)*(world_size-1));
     MPI_Init(&argc,&argv); 
@@ -63,6 +63,17 @@ int main(int argc, char *argv[]){
     MPI_Waitall(world_size-1, request, status); 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
+    for(int i=0;i<C;i++){
+        for(int j=0;j<W;j++) {
+            for(int k=0;k<H;k++) {
+                checksum += O[i][j][k];
+                printf("%lf ",O[i][j][k]);
+            }
+            printf("\n");
+        }
+        printf("\n\n");
+    }
+    printf("\n The check sum is %lf\n\n",checksum);
     free(O);
     free(I_sub);
     free(buff);
