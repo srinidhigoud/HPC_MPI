@@ -59,13 +59,19 @@ int main(int argc, char *argv[]){
     } 
     MPI_Barrier(MPI_COMM_WORLD);
     if(world_rank==0){
-        for(int i=0;i<C;i++){
-            for(int j=0;j<W;j++) {
-                for(int k=0;k<H;k++) {
-                    for(int idx=0;idx<world_size-1;idx++) O[i*H*W+j*W+k] += buff[idx*C*H*W+i*H*W+j*W+k]*((double)1/(world_size-1));
+        for(int idx=0;idx<world_size-1;idx++){
+            for(int i=0;i<C;i++){
+                for(int j=0;j<W;j++) {
+                    for(int k=0;k<H;k++) {
+                        printf("%lf ",buff[idx*C*H*W+i*H*W+j*W+k] );
+                        O[i*H*W+j*W+k] += buff[idx*C*H*W+i*H*W+j*W+k]*((double)1/(world_size-1));
+                    }
+                    printf("\n");
                 }
+                printf("\n");
             }
-        }
+            printf("\n");
+        } 
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
