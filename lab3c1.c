@@ -15,45 +15,40 @@ int main(int argc, char *argv[]){
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Request request[(world_size-1)];
     MPI_Status status[(world_size-1)];
-    MPI_Request request2[(world_size-1)];
+     MPI_Request request2[(world_size-1)];
     MPI_Status status2[(world_size-1)];
-    double ****buff = (double****)malloc(sizeof(double***)*(world_size-1));
+    double **buff = (double**)malloc(sizeof(double*)*(world_size-1));
+    // printf("here\n");
+    printf("%d \n", world_rank);
     if(world_rank==0){
-        for(int i=0;i<world_size-1;i++){
-            buff[i] = (double***)malloc(sizeof(double**)*C);
-            for(int j=0;j<C;j++) {
-                buff[i][j] = (double**)malloc(sizeof(double*)*W);
-                for(int k=0;k<W;k++) {
-                    buff[i][j][k] = (double*)malloc(sizeof(double)*H);
-                }
-            }
-        }
-        O = (double***)malloc(sizeof(double**)*C);
+        // printf("here1\n");
+        O = (double*)malloc(sizeof(double)*C*H*W);
         for(int i=0;i<C;i++){
-            O[i] = (double**)malloc(sizeof(double*)*W);
-            for(int j=0;j<W;j++) {
-                O[i][j] = (double*)malloc(sizeof(double)*H);
-                for(int k=0;k<H;k++) {
-                    O[i][j][k] = 0;
+            for(int j=0;j<H;j++) {
+                for(int k=0;k<W;k++) {
+                    O[i*H*W+j*W+k] = 0;
                 }
             }
         }
     }
     else{
-        I_sub = (double***)malloc(sizeof(double**)*C);
+        // printf("here2\n");
+        buff[world_rank-1] = (double*)malloc(sizeof(double)*C*H*W);
+        I_sub = (double*)malloc(sizeof(double)*C*H*W);
         for(int i=0;i<C;i++){
-            I_sub[i] = (double**)malloc(sizeof(double*)*W);
-            for(int j=0;j<W;j++) {
-                I_sub[i][j] = (double*)malloc(sizeof(double)*H);
-                for(int k=0;k<H;k++) {
-                    I_sub[i][j][k] = world_rank + i*(j+k);
+            for(int j=0;j<H;j++) {
+                buff[world_rank-1][i*H*W+j*W] = (double*)malloc(sizeof(double)*W);
+                for(int k=0;k<W;k++) {
+                    I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
                 }
             }
         }
     }
+    // printf("here3\n");
     for(int idx=0;idx<world_size-1;idx++){
         MPI_Irecv(buff[idx], C*H*W, MPI_DOUBLE, idx+1, 123+idx+1, MPI_COMM_WORLD, &request[idx]);
     }
+    // printf("here4q\n");
     MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request2[world_rank]);
     MPI_Waitall(world_size-1, request, status); 
     MPI_Waitall(world_size-1, request2, status2); 
@@ -63,7 +58,7 @@ int main(int argc, char *argv[]){
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
-                    O[i][j][k] += buff[idx][i][j][k]*((double)1/(world_size-1));
+                    O[i*H*W+j*W+k] += buff[idx*C*H*W+i*H*W+j*W+k]*((double)1/(world_size-1));
                 }
             }
         }
