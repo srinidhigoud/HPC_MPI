@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
     printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
         // printf("here1\n");
-        buff = (double*)malloc(sizeof(double*)*(world_size-1)*C*H*W);
+        buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)malloc(sizeof(double)*C*H*W);
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
