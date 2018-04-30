@@ -10,12 +10,12 @@ int main(int argc, char *argv[]){
     int world_rank, world_size; 
     double checksum = 0;
     double ***I_sub, ***O;
-    double ****buff = (double****)malloc(sizeof(double***)*(world_size-1));
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    MPI_Request request[world_size-1];
+    MPI_Request request[2*(world_size-1)];
     MPI_Status status[2*(world_size-1)];
+    double ****buff = (double****)malloc(sizeof(double***)*(world_size-1));
     if(world_rank==0){
         for(int i=0;i<world_size-1;i++){
             buff[i] = (double***)malloc(sizeof(double**)*C);
