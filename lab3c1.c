@@ -22,7 +22,8 @@ int main(int argc, char *argv[]){
     printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
         // printf("here1\n");
-        buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
+        buff = (double**)malloc(sizeof(double*)*(world_size-1));
+        for(int i=0;i<world_size-1;i++) buff[i] = (double*)malloc(sizeof(double)*C*H*W);
         O = (double*)malloc(sizeof(double)*C*H*W);
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
@@ -49,7 +50,7 @@ int main(int argc, char *argv[]){
         // printf("\n");
     }
     // printf("here3\n");
-    if(world_rank==0) for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
+    if(world_rank==0) for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff[idx], C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
     // printf("here4q\n");
     else{
         // printf("Input %d\n",world_rank);
@@ -82,8 +83,8 @@ int main(int argc, char *argv[]){
             for(int i=0;i<C;i++){
                 for(int j=0;j<W;j++) {
                     for(int k=0;k<H;k++) {
-                        printf("%lf ",buff[idx*C*H*W+i*H*W+j*W+k] );
-                        O[i*H*W+j*W+k] += buff[idx*C*H*W+i*H*W+j*W+k]*((double)1/(world_size-1));
+                        printf("%lf ",buff[idx][i*H*W+j*W+k] );
+                        O[i*H*W+j*W+k] += buff[idx][i*H*W+j*W+k]*((double)1/(world_size-1));
                     }
                     printf("\n");
                 }
