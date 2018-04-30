@@ -13,12 +13,10 @@ int main(int argc, char *argv[]){
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    MPI_Request request[(world_size-1)];
-    MPI_Status status[(world_size-1)];
-    MPI_Request request2;
+    MPI_Request request;
+    MPI_Status status;
+     MPI_Request request2;
     MPI_Status status2;
-    //  MPI_Request request2[(world_size-1)];
-    // MPI_Status status2[(world_size-1)];
     double *buff;
     // printf("here\n");
     printf("%d %d\n", world_size, world_rank);
@@ -46,11 +44,11 @@ int main(int argc, char *argv[]){
         }
     }
     // printf("here3\n");
-    for(int i=0;i<world_size-1;i++) MPI_Irecv(buff+i*C*H*W, C*H*W, MPI_DOUBLE, i+1, 123+i+1, MPI_COMM_WORLD, &request[i]);
+    MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, world_rank, 123+world_rank, MPI_COMM_WORLD, &request);
     // printf("here4q\n");
-    if(world_rank>0) MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request[world_rank-1 + world_size-1]);
-    if(world_rank>0) MPI_Wait(&request2, &status2);
-    MPI_Waitall((world_size-1), request, status); 
+    MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request2);
+    MPI_Waitall(&request, &status); 
+    MPI_Waitall(&request2, &status2); 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
     for(int idx=0;idx<world_size-1;idx++){
