@@ -62,4 +62,7 @@ int main(int argc, char *argv[]){
     for(int i=0;i<world_size-1;i++) MPI_Wait(&request[i], &status); 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
+    free(O);
+    free(I_sub);
+    free(buff);
 }
