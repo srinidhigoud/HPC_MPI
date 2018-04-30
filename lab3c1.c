@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request[idx+world_size-1]);
+    MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request[world_rank+world_size-2]);
     MPI_Waitall(world_size-1, request, status); 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
