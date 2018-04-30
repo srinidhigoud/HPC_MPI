@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
         MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123+idx+1, MPI_COMM_WORLD, &request[idx]);
     }
     // printf("here4q\n");
-    MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request2[world_rank]);
+    MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123+world_rank, MPI_COMM_WORLD, &request2[world_rank-1]);
     MPI_Waitall(world_size-1, request, status); 
     MPI_Waitall(world_size-1, request2, status2); 
     MPI_Barrier(MPI_COMM_WORLD);
