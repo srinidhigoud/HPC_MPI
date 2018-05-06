@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
         gettimeofday(&t2, NULL);
 
         elapsedTime = t2.tv_usec - t1.tv_usec;
-        printf("%4.3lf, %4.3lf\n",checksum/(world_size-1),elapsedTime/1000);
+         printf("%4.3lf, %4.3lf\n",checksum/(world_size-1),elapsedTime/1000);
 
     }
     else{
