@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
         // printf("Waiting to send %d \n", world_rank);
         MPI_Wait(&request2, &status2); 
         // printf("Sent %d \n",world_rank);
-        // MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
         // printf("\n");
     }
     
