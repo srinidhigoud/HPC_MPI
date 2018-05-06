@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     for(int i=0;i<C;i++){
         for(int j=0;j<W;j++) {
             for(int k=0;k<H;k++) {
-                if(world_rank==0) checksum += I_rec[i*H*W+j*W+k];
+                checksum += I_rec[i*H*W+j*W+k];
             }
         }
     }
@@ -48,4 +48,3 @@ int main(int argc, char *argv[]){
     MPI_Finalize();
 
 }
-//CheckSum - 3218079744.000

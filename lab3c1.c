@@ -4,9 +4,9 @@
 #include <assert.h>
 #include <time.h>
 #include <sys/time.h>
-#define H 2  
-#define W 2
-#define C 1
+#define H 1024  
+#define W 1024
+#define C 3
 
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
         gettimeofday(&t2, NULL);
 
         elapsedTime = t2.tv_usec - t1.tv_usec;
-        // printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
+        printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
 
     }
     else{
