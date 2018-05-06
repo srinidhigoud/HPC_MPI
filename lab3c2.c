@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     gettimeofday(&t2, NULL);
 
     elapsedTime = t2.tv_usec - t1.tv_usec;
-    if(world_rank==0) printf("CheckSum - %4.3lf ; Time - %f\n",checksum/world_size,elapsedTime);
+    if(world_rank==0) printf("%4.3lf, %4.3lf\n",checksum/world_size,elapsedTime/1000);
     MPI_Finalize();
 
 }
