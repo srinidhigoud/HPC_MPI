@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
-        for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff[idx*C*H*W], C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
+        for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
         printf("Received everything \n");
@@ -32,8 +32,11 @@ int main(int argc, char *argv[]){
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
-                    printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
-                    for(int idx=0;idx<world_size-1;idx++){ O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k]*((double)1/(world_size-1));
+                    // printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
+                    for(int idx=0;idx<world_size-1;idx++){
+                        printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
+                        O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k]*((double)1/(world_size-1));
+                    } 
                 }
                 checksum += O[i*H*W+j*W+k] ;
                 printf("\n");
