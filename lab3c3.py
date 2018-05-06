@@ -14,7 +14,6 @@ from PIL import Image
 from torchvision import datasets
 from torch.autograd import Variable
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 import time
@@ -154,16 +153,16 @@ def run(rank, size, dataset, model, optimizer, criterion):
     print('Rank ', dist.get_rank(), ', epoch ',
         epoch, ': ', epoch_loss / num_batches)
 
-    weighted_loss = torch.Tensor(epoch_loss * numberOfSamples)
+    loss_w = torch.Tensor(epoch_loss * numberOfSamples)
     numberOfSamples = torch.Tensor(numberOfSamples)
-    dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
+    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
 
-    return weighted_loss, numberOfSamples
+    return loss_w, numberOfSamples
 
 
 
-def train(rank, size):
+def main(rank,size):
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()
@@ -182,14 +181,8 @@ def train(rank, size):
     test_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
 
 
-def main(local_rank,world_size):
-    
-    train(local_rank,world_size)
-
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("ERROR")
-        sys.exit(1)
+    
     dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
     local_rank = dist.get_rank()
     wsize = dist.get_world_size()
