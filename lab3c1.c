@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
         }
         gettimeofday(&t2, NULL);
         elapsedTime = t2.tv_usec - t1.tv_usec;
-        printf("CheckSum - %4.3lf ; Time - %f\n",checkSum,elapsedTime);
+        printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
     }
     else{
         // printf("here2\n");
