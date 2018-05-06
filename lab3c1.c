@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
+        MPI_Barrier(MPI_COMM_WORLD);
         for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
@@ -32,7 +33,6 @@ int main(int argc, char *argv[]){
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
-                    // printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
                     for(int idx=0;idx<world_size-1;idx++){
                         printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
                         O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k]*((double)1/(world_size-1));
@@ -43,16 +43,6 @@ int main(int argc, char *argv[]){
             }
             printf("\n");
         }
-        // for(int i=0;i<C;i++){
-        //     for(int j=0;j<W;j++) {
-        //         for(int k=0;k<H;k++) {
-                    
-        //             printf("%lf ",O[i*H*W+j*W+k] );
-        //         }
-        //         printf("\n");
-        //     }
-        //     printf("\n\n");
-        // }
         printf("\n The check sum is %lf\n\n",checksum);
     }
     else{
@@ -69,6 +59,7 @@ int main(int argc, char *argv[]){
             }
             // printf("\n");
         }
+        MPI_Barrier(MPI_COMM_WORLD);
         MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD, &request2);
         printf("Waiting to send %d \n", world_rank);
         MPI_Wait(&request2, &status2); 
