@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <assert.h>
-#define H 2 
-#define W 2
-#define C 3
+#define H 1024 
+#define W 1024
+#define C 1024
 
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
@@ -24,12 +24,12 @@ int main(int argc, char *argv[]){
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
-        MPI_Barrier(MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
         for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
         printf("Received everything \n");
-        MPI_Barrier(MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
         for(int idx=0;idx<world_size-1;idx++){
             for(int i=0;i<C;i++){
                 for(int j=0;j<W;j++){
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
             }
             // printf("\n");
         }
-        MPI_Barrier(MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
         MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD, &request2);
         printf("Waiting to send %d \n", world_rank);
         MPI_Wait(&request2, &status2); 
