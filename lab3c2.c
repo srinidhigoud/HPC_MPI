@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     for(int i=0;i<C;i++){
         for(int j=0;j<H;j++) {
             for(int k=0;k<W;k++) {
-                I_send[i*H*W+j*W+k] = (world_rank + i*(j+k))/world_size;
+                I_send[i*H*W+j*W+k] = (world_rank + 1 + i*(j+k))/world_size;
             }
         }
     }
