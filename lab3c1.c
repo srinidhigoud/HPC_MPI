@@ -36,9 +36,9 @@ int main(int argc, char *argv[]){
                     for(int idx=0;idx<world_size-1;idx++){
                         printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
                         O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k]*((double)1/(world_size-1));
-                    } 
+                    }
+                    checksum += O[i*H*W+j*W+k] ;
                 }
-                checksum += O[i*H*W+j*W+k] ;
                 printf("\n");
             }
             printf("\n");
