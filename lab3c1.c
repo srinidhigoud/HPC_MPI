@@ -4,9 +4,9 @@
 #include <assert.h>
 #include <time.h>
 #include <sys/time.h>
-#define H 1024  
-#define W 1024
-#define C 3
+#define H 2  
+#define W 2
+#define C 1
 
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
@@ -34,18 +34,7 @@ int main(int argc, char *argv[]){
         MPI_Waitall(world_size-1, request, status); 
         // printf("Received everything \n");
         MPI_Barrier(MPI_COMM_WORLD);
-        // for(int idx=0;idx<world_size-1;idx++){
-        //     for(int i=0;i<C;i++){
-        //         for(int j=0;j<W;j++){
-        //             for(int k=0;k<H;k++){
-        //                 printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
-        //             }
-        //             printf("\n");
-        //         }
-        //         printf("\n");
-        //     }
-        //     printf("\n");
-        // }
+        
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
@@ -59,14 +48,19 @@ int main(int argc, char *argv[]){
             }
             // printf("\n");
         }
+
         gettimeofday(&t2, NULL);
+
         elapsedTime = t2.tv_usec - t1.tv_usec;
-        printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
+        // printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
+
     }
     else{
+
         // printf("here2\n");
         I_sub = (double*)malloc(sizeof(double)*C*H*W);
         // printf("Input %d\n",world_rank);
+
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
                 for(int k=0;k<W;k++) {
@@ -87,7 +81,5 @@ int main(int argc, char *argv[]){
     }
     
     MPI_Finalize();
-    // free(O);
-    // free(I_sub);
-    // free(buff);
+
 }
