@@ -10,6 +10,7 @@
 
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
+    double checksum = 0;
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
@@ -23,33 +24,35 @@ int main(int argc, char *argv[]){
     double elapsedTime;
     // printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
-        double checksum = 0;
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
         // MPI_Barrier(MPI_COMM_WORLD);
         gettimeofday(&t1, NULL);
-        for(int idx = 0;idx<world_size-1;idx++){
-            MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
-            for(int i=0;i<C;i++){
-                for(int j=0;j<W;j++) {
-                    for(int k=0;k<H;k++) {
-                        O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k];
-                        checksum += buff[idx*C*H*W + i*H*W + j*W + k];
-                    }
-                }
-            }
-        } 
+        for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         // printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
         // printf("Received everything \n");
         MPI_Barrier(MPI_COMM_WORLD);
         
+        for(int i=0;i<C;i++){
+            for(int j=0;j<W;j++) {
+                for(int k=0;k<H;k++) {
+                    for(int idx=0;idx<world_size-1;idx++){
+                        // printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
+                        O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k];
+                    }
+                    checksum += O[i*H*W+j*W+k] ;
+                }
+                // printf("\n");
+            }
+            // printf("\n");
+        }
 
         gettimeofday(&t2, NULL);
 
         elapsedTime = t2.tv_usec - t1.tv_usec;
-        printf("CheckSum - %4.3lf ; Time - %f\n",(double)checksum/(world_size-1),elapsedTime);
+         printf("%4.3lf, %4.3lf\n",checksum/(world_size-1),elapsedTime/1000);
 
     }
     else{
