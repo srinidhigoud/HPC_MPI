@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
         printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
         printf("Received everything \n");
-        // MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
         for(int idx=0;idx<world_size-1;idx++){
             for(int i=0;i<C;i++){
                 for(int j=0;j<W;j++){
