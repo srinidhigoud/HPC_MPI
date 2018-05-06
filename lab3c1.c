@@ -37,14 +37,11 @@ int main(int argc, char *argv[]){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
                     for(int idx=0;idx<world_size-1;idx++){
-                        // printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
                         O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k];
                     }
                     checksum += O[i*H*W+j*W+k] ;
                 }
-                // printf("\n");
             }
-            // printf("\n");
         }
 
         gettimeofday(&t2, NULL);
@@ -70,7 +67,6 @@ int main(int argc, char *argv[]){
         MPI_Wait(&request2, &status2); 
         // printf("Sent %d \n",world_rank);
         MPI_Barrier(MPI_COMM_WORLD);
-        // printf("\n");
     }
     
     MPI_Finalize();
