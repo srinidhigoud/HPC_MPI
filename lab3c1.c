@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <assert.h>
-#define H 1024 
-#define W 1024
-#define C 1024
+#define H 4 
+#define W 4
+#define C 3
 
 int main(int argc, char *argv[]){
     int world_rank, world_size; 
