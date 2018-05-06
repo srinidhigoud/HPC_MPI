@@ -33,13 +33,13 @@ int main(int argc, char *argv[]){
     
     MPI_Barrier(MPI_COMM_WORLD);
     
-    for(int i=0;i<C;i++){
-        for(int j=0;j<W;j++) {
-            for(int k=0;k<H;k++) {
-                checksum += I_rec[i*H*W+j*W+k];
+    if(world_rank==0)(for(int i=0;i<C;i++){
+            for(int j=0;j<W;j++) {
+                for(int k=0;k<H;k++) {
+                    checksum += I_rec[i*H*W+j*W+k];
+                }
             }
-        }
-    }
+        })
 
     gettimeofday(&t2, NULL);
 
