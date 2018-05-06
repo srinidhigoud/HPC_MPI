@@ -129,10 +129,15 @@ def partition_dataset(dataset):
 
 
 
-def run(rank, size, dataset, model, optimizer, criterion):
+def run(dataset, model, optimizer, criterion):
 
     torch.manual_seed(1234)
     
+
+    size = dist.get_world_size()
+    rank = dist.get_rank() 
+
+
     train_set, bsz = partition_dataset(dataset)
     model = Net()
     optimizer = optim.SGD(model.parameters(),
@@ -162,7 +167,11 @@ def run(rank, size, dataset, model, optimizer, criterion):
 
 
 
-def main(rank,size):
+def main():
+
+    size = dist.get_world_size()
+    rank = dist.get_rank() 
+
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()
@@ -183,7 +192,6 @@ def main(rank,size):
 
 if __name__ == "__main__":
     
-    dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
-    local_rank = dist.get_rank()
-    wsize = dist.get_world_size()
-    main(local_rank, world_size)
+    # dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
+    dist.init_process_group(backend="mpi", world_size=4)
+    main()
