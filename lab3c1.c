@@ -12,73 +12,23 @@ int main(int argc, char *argv[]){
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    double **I_sub, *O;
+    double *I_sub, *O;
     MPI_Request request[world_size-1];
     MPI_Status status[world_size-1];
      MPI_Request request2;
     MPI_Status status2;
     double *buff;
-    I_sub = (double**)malloc(sizeof(double*)*(world_size-1));
     // printf("here\n");
     printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
-        // for(int i=0;i<C;i++){
-        //     for(int j=0;j<H;j++) {
-        //         for(int k=0;k<W;k++) {
-        //             O[i*H*W+j*W+k] = 0;
-        //         }
-        //     }
-        // }
-    }
-    else{
-        // printf("here2\n");
-        I_sub[world_rank-1] = (double*)malloc(sizeof(double)*C*H*W);
-        // printf("Input %d\n",world_rank);
-        for(int i=0;i<C;i++){
-            for(int j=0;j<H;j++) {
-                for(int k=0;k<W;k++) {
-                    I_sub[world_rank-1][i*H*W+j*W+k] = world_rank + i*(j+k);
-                    // printf("%lf ",I_sub[i*H*W+j*W+k]);
-                }
-                // printf("\n");
-            }
-            // printf("\n");
-        }
-        // printf("\n");
-    }
-    // printf("here3\n");
-    if(world_rank==0) for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff[idx*C*H*W], C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
-    // printf("here4q\n");
-    else{
-        // printf("Input %d\n",world_rank);
-        // for(int i=0;i<C;i++){
-        //     for(int j=0;j<H;j++) {
-        //         for(int k=0;k<W;k++) {
-        //             // I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
-        //             printf("%lf ",I_sub[i*H*W+j*W+k]);
-        //         }
-        //         printf("\n");
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n");
-        MPI_Isend(I_sub[world_rank-1], C*H*W, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD, &request2);
-    } 
-    if(world_rank==0){
+        for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff[idx*C*H*W], C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
         printf("Received everything \n");
-    } 
-    else{
-        printf("Waiting to send %d \n", world_rank);
-        MPI_Wait(&request2, &status2); 
-        printf("Sent %d \n",world_rank);
-    } 
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(world_rank==0){
+        MPI_Barrier(MPI_COMM_WORLD);
         for(int idx=0;idx<world_size-1;idx++){
             for(int i=0;i<C;i++){
                 for(int j=0;j<W;j++) {
@@ -103,7 +53,36 @@ int main(int argc, char *argv[]){
             printf("\n\n");
         }
         printf("\n The check sum is %lf\n\n",checksum);
+        // for(int i=0;i<C;i++){
+        //     for(int j=0;j<H;j++) {
+        //         for(int k=0;k<W;k++) {
+        //             O[i*H*W+j*W+k] = 0;
+        //         }
+        //     }
+        // }
     }
+    else{
+        // printf("here2\n");
+        I_sub = (double*)malloc(sizeof(double)*C*H*W);
+        // printf("Input %d\n",world_rank);
+        for(int i=0;i<C;i++){
+            for(int j=0;j<H;j++) {
+                for(int k=0;k<W;k++) {
+                    I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
+                    // printf("%lf ",I_sub[i*H*W+j*W+k]);
+                }
+                // printf("\n");
+            }
+            // printf("\n");
+        }
+        MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD, &request2);
+        printf("Waiting to send %d \n", world_rank);
+        MPI_Wait(&request2, &status2); 
+        printf("Sent %d \n",world_rank);
+        MPI_Barrier(MPI_COMM_WORLD);
+        // printf("\n");
+    }
+    
     MPI_Finalize();
     free(O);
     free(I_sub);
