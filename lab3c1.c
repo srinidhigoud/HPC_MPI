@@ -22,12 +22,10 @@ int main(int argc, char *argv[]){
     double *buff;
     struct timeval t1, t2;
     double elapsedTime;
-    // printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
-        // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
-        // MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
         gettimeofday(&t1, NULL);
         for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         // printf("Waiting to receive everything \n");
@@ -57,21 +55,16 @@ int main(int argc, char *argv[]){
     }
     else{
 
-        // printf("here2\n");
         I_sub = (double*)malloc(sizeof(double)*C*H*W);
-        // printf("Input %d\n",world_rank);
 
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
                 for(int k=0;k<W;k++) {
                     I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
-                    // printf("%lf ",I_sub[i*H*W+j*W+k]);
                 }
-                // printf("\n");
             }
-            // printf("\n");
         }
-        // MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
         MPI_Isend(I_sub, C*H*W, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD, &request2);
         // printf("Waiting to send %d \n", world_rank);
         MPI_Wait(&request2, &status2); 
