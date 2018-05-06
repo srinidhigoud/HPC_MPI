@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
     double *I_sub, *O;
     MPI_Request request[world_size-1];
     MPI_Status status[world_size-1];
-     MPI_Request request2;
+    MPI_Request request2;
     MPI_Status status2;
     double *buff;
     // printf("here\n");
@@ -29,37 +29,28 @@ int main(int argc, char *argv[]){
         MPI_Waitall(world_size-1, request, status); 
         printf("Received everything \n");
         MPI_Barrier(MPI_COMM_WORLD);
-        for(int idx=0;idx<world_size-1;idx++){
-            for(int i=0;i<C;i++){
-                for(int j=0;j<W;j++) {
-                    for(int k=0;k<H;k++) {
-                        printf("%lf ",buff[idx][i*H*W+j*W+k] );
-                        O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k]*((double)1/(world_size-1));
-                    }
-                    printf("\n");
-                }
-                printf("\n");
-            }
-            printf("\n");
-        } 
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
-                    checksum += O[i*H*W+j*W+k] ;
-                    printf("%lf ",O[i*H*W+j*W+k] );
+                    printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
+                    for(int idx=0;idx<world_size-1;idx++){ O[i*H*W + j*W + k] += buff[idx*C*H*W + i*H*W + j*W + k]*((double)1/(world_size-1));
                 }
+                checksum += O[i*H*W+j*W+k] ;
                 printf("\n");
             }
-            printf("\n\n");
+            printf("\n");
         }
-        printf("\n The check sum is %lf\n\n",checksum);
         // for(int i=0;i<C;i++){
-        //     for(int j=0;j<H;j++) {
-        //         for(int k=0;k<W;k++) {
-        //             O[i*H*W+j*W+k] = 0;
+        //     for(int j=0;j<W;j++) {
+        //         for(int k=0;k<H;k++) {
+                    
+        //             printf("%lf ",O[i*H*W+j*W+k] );
         //         }
+        //         printf("\n");
         //     }
+        //     printf("\n\n");
         // }
+        printf("\n The check sum is %lf\n\n",checksum);
     }
     else{
         // printf("here2\n");
