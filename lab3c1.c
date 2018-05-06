@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
         for(int i=0;i<C;i++){
             for(int j=0;j<H;j++) {
                 for(int k=0;k<W;k++) {
-                    I_sub[i*H*W+j*W+k] = world_rank + i*(j+k);
+                    I_sub[i*H*W+j*W+k] = i*(j+k);
                     // printf("%lf ",I_sub[i*H*W+j*W+k]);
                 }
                 // printf("\n");
