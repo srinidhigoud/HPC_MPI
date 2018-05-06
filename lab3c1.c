@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <time.h>
 #include <sys/time.h>
-#define H 4 
-#define W 4
+#define H 1024  
+#define W 1024
 #define C 3
 
 int main(int argc, char *argv[]){
