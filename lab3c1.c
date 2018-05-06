@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <assert.h>
+#include <time.h>
+#include <sys/time.h>
 #define H 4 
 #define W 4
 #define C 3
@@ -18,30 +20,32 @@ int main(int argc, char *argv[]){
     MPI_Request request2;
     MPI_Status status2;
     double *buff;
-    // printf("here\n");
+    struct timeval t1, t2;
+    double elapsedTime;
     printf("%d %d\n", world_size, world_rank);
     if(world_rank==0){
         // printf("here1\n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
         // MPI_Barrier(MPI_COMM_WORLD);
+        gettimeofday(&t1, NULL);
         for(int idx = 0;idx<world_size-1;idx++) MPI_Irecv(buff+idx*C*H*W, C*H*W, MPI_DOUBLE, idx+1, 123, MPI_COMM_WORLD, &request[idx]);
         printf("Waiting to receive everything \n");
         MPI_Waitall(world_size-1, request, status); 
         printf("Received everything \n");
         MPI_Barrier(MPI_COMM_WORLD);
-        for(int idx=0;idx<world_size-1;idx++){
-            for(int i=0;i<C;i++){
-                for(int j=0;j<W;j++){
-                    for(int k=0;k<H;k++){
-                        printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
-                    }
-                    printf("\n");
-                }
-                printf("\n");
-            }
-            printf("\n");
-        }
+        // for(int idx=0;idx<world_size-1;idx++){
+        //     for(int i=0;i<C;i++){
+        //         for(int j=0;j<W;j++){
+        //             for(int k=0;k<H;k++){
+        //                 printf("%lf ", buff[idx*C*H*W + i*H*W + j*W + k] );
+        //             }
+        //             printf("\n");
+        //         }
+        //         printf("\n");
+        //     }
+        //     printf("\n");
+        // }
         for(int i=0;i<C;i++){
             for(int j=0;j<W;j++) {
                 for(int k=0;k<H;k++) {
@@ -55,7 +59,9 @@ int main(int argc, char *argv[]){
             }
             // printf("\n");
         }
-        printf("\n The check sum is %lf\n\n",checksum);
+        gettimeofday(&t2, NULL);
+        elapsedTime = t2.tv_usec - t1.tv_usec;
+        printf("CheckSum - %4.3lf ; Time - %f\n",checkSum,elapsedTime);
     }
     else{
         // printf("here2\n");
@@ -76,7 +82,7 @@ int main(int argc, char *argv[]){
         printf("Waiting to send %d \n", world_rank);
         MPI_Wait(&request2, &status2); 
         printf("Sent %d \n",world_rank);
-        MPI_Barrier(MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
         // printf("\n");
     }
     
