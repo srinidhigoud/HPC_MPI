@@ -187,6 +187,9 @@ def main(local_rank,world_size):
     train(local_rank,world_size)
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("ERROR")
+        sys.exit(1)
     dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
     local_rank = dist.get_rank()
     wsize = dist.get_world_size()
