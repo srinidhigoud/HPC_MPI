@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    
+
     gettimeofday(&t1, NULL);
     MPI_Allreduce(I_send, I_rec, C*H*W, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     for(int i=0;i<C;i++){
         for(int j=0;j<W;j++) {
             for(int k=0;k<H;k++) {
-                checksum += I_rec[i*H*W+j*W+k] ;
+                if(world_rank==0) checksum += I_rec[i*H*W+j*W+k];
             }
         }
     }
@@ -44,7 +44,8 @@ int main(int argc, char *argv[]){
     gettimeofday(&t2, NULL);
 
     elapsedTime = t2.tv_usec - t1.tv_usec;
-    printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
+    if(world_rank==0) printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
     MPI_Finalize();
 
 }
+//CheckSum - 3218079744.000
