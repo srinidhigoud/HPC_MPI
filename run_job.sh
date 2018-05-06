@@ -24,7 +24,7 @@ module load openmpi/intel/2.0.1
 echo "Job started"
 #Uncomment to execute MPI code
 $BIN_PATH/mpirun -n $R hostname
-#$BIN_PATH/mpirun -n $R ./lab3c1
+$BIN_PATH/mpirun -n $R ./lab3c1
 #$BIN_PATH/mpirun -n $(($R-1)) ./lab3c2
 
 
