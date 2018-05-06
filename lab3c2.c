@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     for(int i=0;i<C;i++){
         for(int j=0;j<H;j++) {
             for(int k=0;k<W;k++) {
-                I_send[i*H*W+j*W+k] = (world_rank + 1 + i*(j+k))/world_size;
+                I_send[i*H*W+j*W+k] = world_rank + i*(j+k);
             }
         }
     }
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     gettimeofday(&t2, NULL);
 
     elapsedTime = t2.tv_usec - t1.tv_usec;
-    if(world_rank==0) printf("CheckSum - %4.3lf ; Time - %f\n",checksum,elapsedTime);
+    if(world_rank==0) printf("CheckSum - %4.3lf ; Time - %f\n",checksum/world_size,elapsedTime);
     MPI_Finalize();
 
 }
