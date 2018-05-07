@@ -186,12 +186,12 @@ def main():
     # net.cuda()
     train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
     dist.init_process_group(backend="mpi")
-    
+
     train_set, bsz = partition_dataset(train_dataset)
     t0 = time.monotonic()
     weighted_loss, numberOfSamples = run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
     t0 = time.monotonic()-t0
-    if rank == 0:
+    if dist.get_rank() == 0:
         print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
         print("The time is - ",t0)
     # test_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
