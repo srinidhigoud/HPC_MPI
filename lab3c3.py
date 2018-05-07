@@ -117,7 +117,7 @@ def average_gradients(model):
 def partition_dataset(dataset):
    
     size = dist.get_world_size()
-    bsz = 128 / float(size)
+    bsz = batch_size
     partition_sizes = [1.0 / size for _ in range(size)]
     partition = DataPartitioner(dataset, partition_sizes)
     partition = partition.use(dist.get_rank())
@@ -137,6 +137,8 @@ def run(dataset, model, optimizer, criterion):
     size = dist.get_world_size()
     rank = dist.get_rank() 
 
+    epoch_loss = 0.0
+    numberOfSamples = 0
 
     train_set, bsz = partition_dataset(dataset)
     model = Net()
@@ -146,7 +148,9 @@ def run(dataset, model, optimizer, criterion):
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     for epoch in range(epochs):
         epoch_loss = 0.0
+        numberOfSamples = 0
         for data, target in train_set:
+            numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
             optimizer.zero_grad()
             output = model(data)
@@ -155,7 +159,7 @@ def run(dataset, model, optimizer, criterion):
             loss.backward()
             average_gradients(model)
             optimizer.step()
-    print('Rank ', dist.get_rank(), ', epoch ',
+        print('Rank ', dist.get_rank(), ', epoch ',
         epoch, ': ', epoch_loss / num_batches)
 
     loss_w = torch.Tensor(epoch_loss * numberOfSamples)
