@@ -182,7 +182,7 @@ def main():
                             ])
     model = Net()
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
     
     # net.cuda()
     train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
