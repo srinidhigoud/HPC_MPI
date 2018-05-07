@@ -113,12 +113,20 @@ class data(Dataset):
 #         param.grad.data /= size
 
 
+def update(model,rank,size){
+    if rank == 0:
+        dist.recv(local_model, src)
+    else:
+        dist.send()
+
+}
+
 
 def partition_dataset(dataset):
    
     size = dist.get_world_size()
     bsz = batch_size
-    partition_sizes = [1.0 / size for _ in range(size)]
+    partition_sizes = [1.0 / size for _ in range(size-1)]
     partition = DataPartitioner(dataset, partition_sizes)
     partition = partition.use(dist.get_rank())
     data_set = DataLoader(partition,
@@ -136,38 +144,42 @@ def run(dataset, model, optimizer, criterion):
 
     size = dist.get_world_size()
     rank = dist.get_rank() 
-
-    epoch_loss = 0.0
-    numberOfSamples = 0
-
-    train_set, bsz = partition_dataset(dataset)
-    model = Net()
-    optimizer = optim.SGD(model.parameters(),
-                            lr=0.01, momentum=0.9)
-
-    num_batches = ceil(len(train_set.dataset) / float(bsz))
-    for epoch in range(epochs):
+    if rank != 0:
         epoch_loss = 0.0
         numberOfSamples = 0
-        for data, target in train_set:
-            numberOfSamples += data.size()[0]
-            data, target = Variable(data), Variable(target)
-            optimizer.zero_grad()
-            output = model(data)
-            loss = criterion(output, target)
-            epoch_loss += loss.item()
-            loss.backward()
-            average_gradients(model)
-            optimizer.step()
-        print('Rank ', dist.get_rank(), ', epoch ',
-        epoch, ': ', epoch_loss / num_batches)
 
-    weighted_loss = torch.Tensor(epoch_loss*numberOfSamples)
-    numberOfSamples = torch.Tensor(numberOfSamples)
-    dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
-    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+        train_set, bsz = partition_dataset(dataset)
+        model = Net()
+        optimizer = optim.SGD(model.parameters(),
+                                lr=0.01, momentum=0.9)
 
-    return loss_w, numberOfSamples
+
+        num_batches = ceil(len(train_set.dataset) / float(bsz))
+        for epoch in range(epochs):
+            epoch_loss = 0.0
+            numberOfSamples = 0
+            for data, target in train_set:
+                numberOfSamples += data.size()[0]
+                data, target = Variable(data), Variable(target)
+                optimizer.zero_grad()
+                output = model(data)
+                loss = criterion(output, target)
+                epoch_loss += loss.item()
+                loss.backward()
+                model = update(model,rank,size)
+                # optimizer.step()
+            print('Rank ', dist.get_rank(), ', epoch ',
+            epoch, ': ', epoch_loss / num_batches)
+
+        weighted_loss = torch.Tensor(epoch_loss*numberOfSamples)
+        numberOfSamples = torch.Tensor(numberOfSamples)
+        dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
+        dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+
+        return loss_w, numberOfSamples
+
+    else:
+
 
 
 
@@ -198,5 +210,5 @@ def main():
 if __name__ == "__main__":
     
     # dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
-    dist.init_process_group(backend="mpi", world_size=4)
+    dist.init_process_group(backend="mpi")
     main()
