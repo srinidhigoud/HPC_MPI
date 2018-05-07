@@ -129,14 +129,67 @@ def partition_dataset(dataset):
 
 
 
-def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
+# def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
-    torch.manual_seed(1234)
+#     torch.manual_seed(1234)
     
 
-    # size = dist.get_world_size()
-    # rank = dist.get_rank() 
+#     # size = dist.get_world_size()
+#     # rank = dist.get_rank() 
 
+#     epoch_loss = 0.0
+#     numberOfSamples = 0
+
+#     # train_set, bsz = partition_dataset(dataset)
+#     # model = Net()
+#     # optimizer = optim.SGD(model.parameters(),
+#                             # lr=0.01, momentum=0.9)
+
+#     num_batches = ceil(len(dataset_loader.dataset) / float(batchSize))
+#     for epoch in range(epochs):
+#         epoch_loss = 0.0
+#         numberOfSamples = 0
+#         for data, target in dataset_loader:
+#             numberOfSamples += data.size()[0]
+#             data, target = Variable(data), Variable(target)
+#             optimizer.zero_grad()
+#             output = model(data)
+#             loss = criterion(output, target)
+#             epoch_loss += loss.item()
+#             loss.backward()
+#             average_gradients(model)
+#             optimizer.step()
+#         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
+
+#     print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
+
+#     loss_w = torch.Tensor([epoch_loss * numberOfSamples])
+#     numberOfSamples = torch.Tensor([numberOfSamples])
+#     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
+#     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+
+#     return loss_w[0], numberOfSamples[0]
+
+
+
+def main():
+
+    torch.manual_seed(1234)
+
+    data_transform = transforms.Compose([
+                                transforms.Resize((32,32)),
+                                transforms.ToTensor()
+                            ])
+    model = Net()
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
+    
+    # net.cuda()
+    train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
+    dist.init_process_group(backend="mpi")
+
+    dataset_loader, batchSize = partition_dataset(train_dataset)
+    t0 = time.monotonic()
     epoch_loss = 0.0
     numberOfSamples = 0
 
@@ -167,29 +220,7 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
     numberOfSamples = torch.Tensor([numberOfSamples])
     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
-
-    return loss_w[0], numberOfSamples[0]
-
-
-
-def main():
-
-
-    data_transform = transforms.Compose([
-                                transforms.Resize((32,32)),
-                                transforms.ToTensor()
-                            ])
-    net = Net()
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
-    
-    # net.cuda()
-    train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
-    dist.init_process_group(backend="mpi")
-
-    train_set, bsz = partition_dataset(train_dataset)
-    t0 = time.monotonic()
-    weighted_loss, numberOfSamples = run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
+    # weighted_loss, numberOfSamples = run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
     t0 = time.monotonic()-t0
     if dist.get_rank() == 0:
         print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
