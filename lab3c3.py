@@ -185,9 +185,6 @@ def main(rank, wsize):
 
 if __name__ == "__main__":
     
-    if len(sys.argv) != 2:
-        print("ERROR")
-        sys.exit(1)
     
     dist.init_process_group(backend="mpi", world_size=4)
     rank = dist.get_rank()
