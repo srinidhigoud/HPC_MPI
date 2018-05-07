@@ -1,50 +1,45 @@
-from __future__ import print_function
-import sys
+import time
 import os
+import sys
 import torch
 import torchvision
 import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torch.cuda
 from math import ceil
 from random import Random
 import torch.distributed as dist
 from PIL import Image
-from torchvision import datasets
+from torchvision import datasets, transforms
 from torch.autograd import Variable
-import torch.nn.parallel
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
-import time
-
-#parameters
-batch_size = 100   # input batch size for training
-epochs = 1       # number of epochs to train
-lr = 0.01
-num_inputs_1 = 3072
-num_outputs_1 = 1024
-num_outputs_2 = 256
-num_outputs_3 = 17
-
-""" Dataset partitioning helper """
 
 class Net(nn.Module):
-    def __init__(self):
+
+    def __init__(self, i1, o1, o2, o3):
         super(Net, self).__init__()
-        self.linear1 = nn.Linear(num_inputs_1, num_outputs_1)
-        self.linear2 = nn.Linear(num_outputs_1, num_outputs_2)
-        self.linear3 = nn.Linear(num_outputs_2, num_outputs_3)
+        self.i1 = i1
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+        self.fc1 = nn.Linear(i1,o1)
+        self.fc2 = nn.Linear(o1,o2)
+        self.fc3 = nn.Linear(o2,o3)
 
-    def forward(self, input):
-        input = input.view(-1, num_inputs_1) # reshape input to batch x num_inputs
-        z = F.relu(self.linear1(input))
-        z = F.relu(self.linear2(z))
-        output = F.log_softmax(self.linear3(z))
-        return output
+    def forward(self, x):
+        x = x.view(-1, self.i1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.log_softmax(self.fc3(x),0)
+        return x
 
 
-class Partition(object):
+class Partition(Dataset):
+
     def __init__(self, data, index):
         self.data = data
         self.index = index
@@ -57,8 +52,9 @@ class Partition(object):
         return self.data[data_idx]
 
 
-class DataPartitioner(object):
-    def __init__(self, data, sizes=[0.7, 0.2, 0.1], seed=1234):
+class DataPartitioner(Dataset):
+
+    def __init__(self, data, sizes, seed=1234):
         self.data = data
         self.partitions = []
         rng = Random()
@@ -76,80 +72,60 @@ class DataPartitioner(object):
         return Partition(self.data, self.partitions[partition])
 
 
-class data(Dataset):
+class kaggleDataset(Dataset):
 
-    def __init__(self, csv_file, root_dir, transform=None):
-        """
-        Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
-        """
-        self.file = pd.read_csv(csv_file)
-        self.root_dir = root_dir
+    def __init__(self, csvPath, imagesPath, transform=None):
+    
+        self.data = pd.read_csv(csvPath)
+        self.imagesPath = imagesPath
         self.transform = transform
 
-    def __len__(self):
-        return len(self.file)
+        self.imagesData = self.data['image_name']
+        self.labelsData = self.data['tag'].astype('int')
 
-    def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir,
-                                self.file.iloc[idx, 0])
-        image = Image.open(img_name+'.jpg')
+    def __getitem__(self, index):
+        imageName = os.path.join(self.imagesPath,self.data.iloc[index, 0])
+        image = Image.open(imageName + '.jpg')
         image = image.convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
-        labels = self.file.iloc[idx, 1].astype('int')
-        return (image,labels)
+        label = self.labelsData[index]
+        return image, label
+
+    def __len__(self):
+        return len(self.data)
 
 
+def partition_dataset(dataLabels, imagesPath, transformations, batchSize):
 
-def average_gradients(model):
-    size = float(dist.get_world_size())
-    for param in model.parameters():
-        dist.all_reduce(param.grad.data,
-                        op=dist.reduce_op.SUM)
-        param.grad.data /= size
-
-
-
-def partition_dataset(dataset):
-   
+    dataset = kaggleDataset(dataLabels,imagesPath,transformations)
     size = dist.get_world_size()
-    bsz = batch_size
+    bsz = batchSize
     partition_sizes = [1.0 / size for _ in range(size)]
     partition = DataPartitioner(dataset, partition_sizes)
     partition = partition.use(dist.get_rank())
-    data_set = DataLoader(partition,
-                            batch_size=bsz,
-                            shuffle=True)
-    return data_set, bsz
+    train_set = DataLoader(partition, batch_size=bsz, shuffle=True, num_workers=1)
+    return train_set, bsz
 
 
+def average_gradients(model):
+
+    size = float(dist.get_world_size())
+    for param in model.parameters():
+        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=0)
+        param.grad.data /= size
 
 
-def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
-
-    torch.manual_seed(1234)
+def run(rank, size, model, optimizer, criterion, epochs, loader, bsz):
     
-
-    # size = dist.get_world_size()
-    # rank = dist.get_rank() 
-
+    torch.manual_seed(1234)
     epoch_loss = 0.0
     numberOfSamples = 0
-
-    # train_set, bsz = partition_dataset(dataset)
-    # model = Net()
-    # optimizer = optim.SGD(model.parameters(),
-                            # lr=0.01, momentum=0.9)
-
-    num_batches = ceil(len(dataset_loader.dataset) / float(batchSize))
+    num_batches = ceil(len(loader.dataset) / float(bsz))
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
-        for batch_idx, (data, target) in enumerate(dataset_loader):
+        for batch_idx, (data, target) in enumerate(loader):
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
             optimizer.zero_grad()
@@ -159,77 +135,62 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
             loss.backward()
             average_gradients(model)
             optimizer.step()
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(dataset_loader.dataset), 100. * batch_idx / len(dataset_loader), loss.item()))
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(loader.dataset), 100. * batch_idx / len(loader), loss.item()))
+
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
 
-    print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
-
-    loss_w = torch.Tensor(epoch_loss * numberOfSamples)
+    weighted_loss = torch.Tensor(epoch_loss * numberOfSamples)
     numberOfSamples = torch.Tensor(numberOfSamples)
-    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
+    dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
 
-    return loss_w, numberOfSamples
-
-# def run(rank, size, dataset, model, optimizer, criterion):
-    
-#     torch.manual_seed(1234)
-#     epoch_loss = 0.0
-#     numberOfSamples = 0
-#     num_batches = ceil(len(loader.dataset) / float(bsz))
-#     for epoch in range(epochs):
-#         epoch_loss = 0.0
-#         numberOfSamples = 0
-#         for batch_idx, (data, target) in enumerate(loader):
-#             numberOfSamples += data.size()[0]
-#             data, target = Variable(data), Variable(target)
-#             optimizer.zero_grad()
-#             output = model(data)
-#             loss = criterion(output, target)
-#             epoch_loss += loss.item()
-#             loss.backward()
-#             average_gradients(model)
-#             optimizer.step()
-#             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(loader.dataset), 100. * batch_idx / len(loader), loss.item()))
-
-#         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
-
-#     weighted_loss = torch.Tensor(epoch_loss * numberOfSamples)
-#     numberOfSamples = torch.Tensor(numberOfSamples)
-#     dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
-#     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
-
-#     return weighted_loss, numberOfSamples
-
-def main(rank, size):
+    return weighted_loss, numberOfSamples
 
 
-    data_transform = transforms.Compose([
-                                transforms.Resize((32,32)),
-                                transforms.ToTensor()
-                            ])
-    net = Net()
+
+def main(rank, wsize):
+
+    batchSize = 100
+    epochs = 1
+    learningRate = 0.01
+    momentum = 0.9
+    i1 = 3072
+    o1 = 1024
+    o2 = 256
+    o3 = 17
+    numWorkers = 1
+
+    net = Net(i1,o1,o2,o3)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
+    optimizer = optim.SGD(net.parameters(), lr = learningRate, momentum = momentum)
+
+    imagesPath = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/'
+    trainData = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv'
+    testData = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv'
+    print('Declared Net and set paths')
+
+    transformations = transforms.Compose([transforms.Resize((32,32)),transforms.ToTensor()])
+
+    trainLoader, bszTrain = partition_dataset(trainData, imagesPath, transformations, batchSize)
+    testLoader, bszTest = partition_dataset(testData, imagesPath, transformations, batchSize)
     
-    # net.cuda()
-    train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
-    train_set, bsz = partition_dataset(train_dataset)
-    t0 = time.monotonic()
-    weighted_loss, numberOfSamples = run(rank, size, train_set,bsz, net, optimizer, criterion)
-    t0 = time.monotonic()-t0
+    print('Created datasets')
+
+    weighted_loss, numberOfSamples = run(rank, wsize, net, optimizer, criterion, epochs, trainLoader, bszTrain)
+
     if rank == 0:
         print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
-        print("The time is - ",t0)
-    test_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
+
 
 
 if __name__ == "__main__":
     
-    # dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
-
+    if len(sys.argv) != 2:
+        print("ERROR")
+        sys.exit(1)
+    
     dist.init_process_group(backend="mpi", world_size=4)
-    size = dist.get_world_size()
-    rank = dist.get_rank() 
+    rank = dist.get_rank()
+    wsize = dist.get_world_size()
 
-    main(rank,size)
+    main(rank, wsize)
