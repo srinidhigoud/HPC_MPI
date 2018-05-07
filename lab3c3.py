@@ -170,35 +170,7 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
     return loss_w, numberOfSamples
 
-# def run(rank, size, dataset, model, optimizer, criterion):
-    
-#     torch.manual_seed(1234)
-#     epoch_loss = 0.0
-#     numberOfSamples = 0
-#     num_batches = ceil(len(loader.dataset) / float(bsz))
-#     for epoch in range(epochs):
-#         epoch_loss = 0.0
-#         numberOfSamples = 0
-#         for batch_idx, (data, target) in enumerate(loader):
-#             numberOfSamples += data.size()[0]
-#             data, target = Variable(data), Variable(target)
-#             optimizer.zero_grad()
-#             output = model(data)
-#             loss = criterion(output, target)
-#             epoch_loss += loss.item()
-#             loss.backward()
-#             average_gradients(model)
-#             optimizer.step()
-#             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(loader.dataset), 100. * batch_idx / len(loader), loss.item()))
 
-#         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
-
-#     weighted_loss = torch.Tensor(epoch_loss * numberOfSamples)
-#     numberOfSamples = torch.Tensor(numberOfSamples)
-#     dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
-#     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
-
-#     return weighted_loss, numberOfSamples
 
 def main(rank, size):
 
