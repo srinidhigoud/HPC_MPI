@@ -129,7 +129,7 @@ def partition_dataset(dataset):
 
 
 
-def run(rank, size, dataset_loader, bsz, model, optimizer, criterion):
+def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
     torch.manual_seed(1234)
     
@@ -145,7 +145,7 @@ def run(rank, size, dataset_loader, bsz, model, optimizer, criterion):
     # optimizer = optim.SGD(model.parameters(),
                             # lr=0.01, momentum=0.9)
 
-    num_batches = ceil(len(dataset_loader.dataset) / float(bsz))
+    num_batches = ceil(len(dataset_loader.dataset) / float(batchSize))
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
@@ -165,8 +165,8 @@ def run(rank, size, dataset_loader, bsz, model, optimizer, criterion):
 
     loss_w = torch.Tensor(epoch_loss * numberOfSamples)
     numberOfSamples = torch.Tensor(numberOfSamples)
-    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
-    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+    # dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
+    # dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
 
     return loss_w, numberOfSamples
 
