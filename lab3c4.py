@@ -105,12 +105,12 @@ class data(Dataset):
 
 
 
-def average_gradients(model):
-    size = float(dist.get_world_size())
-    for param in model.parameters():
-        dist.all_reduce(param.grad.data,
-                        op=dist.reduce_op.SUM)
-        param.grad.data /= size
+# def average_gradients(model):
+#     size = float(dist.get_world_size())
+#     for param in model.parameters():
+#         dist.all_reduce(param.grad.data,
+#                         op=dist.reduce_op.SUM)
+#         param.grad.data /= size
 
 
 
