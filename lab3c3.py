@@ -129,7 +129,7 @@ def partition_dataset(dataset):
 
 
 
-def run(rank, size, dataset, model, optimizer, criterion):
+def run(rank, size, dataset, bsz, model, optimizer, criterion):
 
     torch.manual_seed(1234)
     
@@ -162,6 +162,7 @@ def run(rank, size, dataset, model, optimizer, criterion):
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
 
     print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
+
     loss_w = torch.Tensor(epoch_loss * numberOfSamples)
     numberOfSamples = torch.Tensor(numberOfSamples)
     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
@@ -169,7 +170,35 @@ def run(rank, size, dataset, model, optimizer, criterion):
 
     return loss_w, numberOfSamples
 
+# def run(rank, size, dataset, model, optimizer, criterion):
+    
+#     torch.manual_seed(1234)
+#     epoch_loss = 0.0
+#     numberOfSamples = 0
+#     num_batches = ceil(len(loader.dataset) / float(bsz))
+#     for epoch in range(epochs):
+#         epoch_loss = 0.0
+#         numberOfSamples = 0
+#         for batch_idx, (data, target) in enumerate(loader):
+#             numberOfSamples += data.size()[0]
+#             data, target = Variable(data), Variable(target)
+#             optimizer.zero_grad()
+#             output = model(data)
+#             loss = criterion(output, target)
+#             epoch_loss += loss.item()
+#             loss.backward()
+#             average_gradients(model)
+#             optimizer.step()
+#             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(loader.dataset), 100. * batch_idx / len(loader), loss.item()))
 
+#         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
+
+#     weighted_loss = torch.Tensor(epoch_loss * numberOfSamples)
+#     numberOfSamples = torch.Tensor(numberOfSamples)
+#     dist.all_reduce(weighted_loss, op=dist.reduce_op.SUM, group=0)
+#     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+
+#     return weighted_loss, numberOfSamples
 
 def main(rank, size):
 
@@ -184,8 +213,9 @@ def main(rank, size):
     
     # net.cuda()
     train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
+    train_set, bsz = partition_dataset(train_dataset)
     t0 = time.monotonic()
-    weighted_loss, numberOfSamples = run(rank, size, train_dataset, net, optimizer, criterion)
+    weighted_loss, numberOfSamples = run(rank, size, train_set,bsz, net, optimizer, criterion)
     t0 = time.monotonic()-t0
     if rank == 0:
         print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
