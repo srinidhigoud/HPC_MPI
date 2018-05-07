@@ -149,7 +149,7 @@ def run(dataset, model, optimizer, criterion):
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
-        for data, target in enumerate(loader):
+        for data, target in train_set:
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
             optimizer.zero_grad()
