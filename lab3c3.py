@@ -163,8 +163,8 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
     print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
 
-    loss_w = torch.Tensor(epoch_loss * numberOfSamples)
-    numberOfSamples = torch.Tensor(numberOfSamples)
+    loss_w = torch.Tensor([epoch_loss * numberOfSamples])
+    numberOfSamples = torch.Tensor([numberOfSamples])
     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
 
