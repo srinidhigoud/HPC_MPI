@@ -228,7 +228,7 @@ if __name__ == "__main__":
     
     # dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
 
-    dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
+    dist.init_process_group(backend="mpi", world_size=4)
     size = dist.get_world_size()
     rank = dist.get_rank() 
 
