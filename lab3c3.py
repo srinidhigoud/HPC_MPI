@@ -155,7 +155,7 @@ def run(dataset, model, optimizer, criterion):
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
-            epoch_loss += loss.data[0]
+            epoch_loss += loss.item()
             loss.backward()
             average_gradients(model)
             optimizer.step()
