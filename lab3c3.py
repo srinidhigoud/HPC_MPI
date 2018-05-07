@@ -140,10 +140,10 @@ def run(rank, size, dataset, bsz, model, optimizer, criterion):
     epoch_loss = 0.0
     numberOfSamples = 0
 
-    train_set, bsz = partition_dataset(dataset)
-    model = Net()
-    optimizer = optim.SGD(model.parameters(),
-                            lr=0.01, momentum=0.9)
+    # train_set, bsz = partition_dataset(dataset)
+    # model = Net()
+    # optimizer = optim.SGD(model.parameters(),
+                            # lr=0.01, momentum=0.9)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     for epoch in range(epochs):
