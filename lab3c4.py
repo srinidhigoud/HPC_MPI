@@ -76,7 +76,7 @@ class DataPartitioner(object):
         return Partition(self.data, self.partitions[partition])
 
 
-class data(Dataset):
+class Kaggledata(Dataset):
 
     def __init__(self, csv_file, root_dir, transform=None):
         """
@@ -148,12 +148,6 @@ def run(dataset, model, optimizer, criterion):
         epoch_loss = 0.0
         numberOfSamples = 0
 
-        train_set, bsz = partition_dataset(dataset)
-        model = Net()
-        optimizer = optim.SGD(model.parameters(),
-                                lr=0.01, momentum=0.9)
-
-
         num_batches = ceil(len(train_set.dataset) / float(bsz))
         for epoch in range(epochs):
             epoch_loss = 0.0
@@ -166,7 +160,8 @@ def run(dataset, model, optimizer, criterion):
                 loss = criterion(output, target)
                 epoch_loss += loss.item()
                 loss.backward()
-                model = update(model,rank,size)
+                dist.send(model,loss)
+
                 # optimizer.step()
             print('Rank ', dist.get_rank(), ', epoch ',
             epoch, ': ', epoch_loss / num_batches)
@@ -182,11 +177,7 @@ def run(dataset, model, optimizer, criterion):
 
 
 
-
 def main():
-
-    size = dist.get_world_size()
-    rank = dist.get_rank() 
 
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
@@ -197,14 +188,14 @@ def main():
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
     
     # net.cuda()
-    train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
+    train_dataset = Kaggledata(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
     t0 = time.monotonic()
     weighted_loss, numberOfSamples = run(train_dataset, net, optimizer, criterion)
     t0 = time.monotonic()-t0
     if rank == 0:
         print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
         print("The time is - ",t0)
-    test_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
+    # test_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
 
 
 if __name__ == "__main__":
