@@ -136,7 +136,7 @@ def runWorker(dataset, criterion):
     # optimizer = optim.SGD(model.parameters(),
                             # lr=0.01, momentum=0.9)
 
-    num_batches = ceil(len(dataset_loader.dataset) / float(batchSize))
+    num_batches = ceil(len(train_set.dataset) / float(batchSize))
     dist.send(torch.Tensor([rank]),dst = 0)
     for param in model.parameters():
         dist.send(torch.Tensor([0]), dst = 0)
@@ -145,7 +145,7 @@ def runWorker(dataset, criterion):
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
-        for data, target in dataset_loader:
+        for data, target in train_set:
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
             optimizer.zero_grad()
