@@ -138,9 +138,12 @@ def runWorker(dataset, criterion):
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     dist.send(tensor = torch.Tensor([0]),dst = 0)
+    print("sent sent")
     for param in model.parameters():
         dist.send(tensor = torch.Tensor([0]), dst = 0)
+        print("sent")
         dist.recv(tensor = param.data, src = 0)
+        print("received")
         # param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
@@ -154,18 +157,24 @@ def runWorker(dataset, criterion):
             epoch_loss += loss.item()
             loss.backward()
             dist.send(tensor = torch.Tensor([rank]),dst = 0)
+            print("sent sent")
             for param in model.parameters():
                 dist.send(tensor = torch.Tensor([param.grad.data]), dst = 0)
+                print("sent")
                 dist.recv(tensor = param.data, src = 0)
+                print("received")
                 # param.data = buffer[0]
             # dist.send(model.parameters(), dst = 0)
             # dist.recv(new_parameter, src = 0)
             # for param in new_parameter:
         torch.distributed.new_group(ranks=list(range(1,size-1)))
         dist.send(tensor = torch.Tensor([0]),dst = 0)
+        print("sent sent")
         for param in model.parameters():
             dist.send(tensor = torch.Tensor([0]), dst = 0)
+            print("sent")
             dist.recv(tensor = param.data, src = 0)
+            print("received")
             # param.data = buffer[0]
 
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
