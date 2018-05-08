@@ -27,6 +27,7 @@ num_outputs_1 = 1024
 num_outputs_2 = 256
 num_outputs_3 = 17
 
+
 """ Dataset partitioning helper """
 
 class Net(nn.Module):
@@ -140,7 +141,7 @@ def runWorker(dataset, criterion):
     dist.send(tensor = torch.Tensor([0]),dst = 0)
     print("sent sent ",rank)
     for param in model.parameters():
-        dist.send(tensor = torch.Tensor([0]), dst = 0)
+        # dist.send(tensor = torch.Tensor([0]), dst = 0)
         print("sent ",rank)
         dist.recv(tensor = param.data, src = 0)
         print("received ",rank)
@@ -170,7 +171,7 @@ def runWorker(dataset, criterion):
         dist.send(tensor = torch.Tensor([0]),dst = 0)
         print("sent sent ",rank)
         for param in model.parameters():
-            dist.send(tensor = torch.Tensor([0]), dst = 0)
+            # dist.send(tensor = torch.Tensor([0]), dst = 0)
             print("sent ",rank)
             dist.recv(tensor = param.data, src = 0)
             print("received ",rank)
