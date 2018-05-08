@@ -158,7 +158,7 @@ def runWorker(dataset, criterion):
             dist.send(tensor = torch.Tensor([rank]),dst = 0)
             print("sent sent")
             for param in model.parameters():
-                dist.send(tensor = torch.Tensor([param.grad.data]), dst = 0)
+                dist.send(tensor = param.grad.data, dst = 0)
                 print("sent")
                 dist.recv(tensor = param.data, src = 0)
                 print("received")
