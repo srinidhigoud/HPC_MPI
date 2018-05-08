@@ -137,11 +137,11 @@ def runWorker(dataset, criterion):
                             # lr=0.01, momentum=0.9)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
-    dist.send(torch.Tensor([0]),dst = 0)
+    dist.send(tensor = torch.Tensor([0]),dst = 0)
     for param in model.parameters():
-        dist.send(torch.Tensor([0]), dst = 0)
-        dist.recv(buffer, src = 0)
-        param.data = buffer[0]
+        dist.send(tensor = torch.Tensor([0]), dst = 0)
+        dist.recv(tensor = param.data, src = 0)
+        # param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
@@ -153,20 +153,20 @@ def runWorker(dataset, criterion):
             loss = criterion(output, target)
             epoch_loss += loss.item()
             loss.backward()
-            dist.send(torch.Tensor([rank]),dst = 0)
+            dist.send(tensor = torch.Tensor([rank]),dst = 0)
             for param in model.parameters():
-                dist.send(torch.Tensor([param.grad.data]), dst = 0)
-                dist.recv(buffer, src = 0)
-                param.data = buffer[0]
+                dist.send(tensor = torch.Tensor([param.grad.data]), dst = 0)
+                dist.recv(tensor = param.data, src = 0)
+                # param.data = buffer[0]
             # dist.send(model.parameters(), dst = 0)
             # dist.recv(new_parameter, src = 0)
             # for param in new_parameter:
         torch.distributed.new_group(ranks=list(range(1,size-1)))
-        dist.send(torch.Tensor([0]),dst = 0)
+        dist.send(tensor = torch.Tensor([0]),dst = 0)
         for param in model.parameters():
-            dist.send(torch.Tensor([0]), dst = 0)
-            dist.recv(buffer, src = 0)
-            param.data = buffer[0]
+            dist.send(tensor = torch.Tensor([0]), dst = 0)
+            dist.recv(tensor = param.data, src = 0)
+            # param.data = buffer[0]
 
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
 
@@ -188,14 +188,14 @@ def runServer(model, optimizer):
     dist.recv(tag, src)
     if tag[0] == 0:
         for param in model.parameters():
-            dist.send(torch.Tensor([param.data]), dst = src)
+            dist.send(tensor = torch.Tensor([param.data]), dst = src)
     else:
         for param in model.parameters():
-            dist.recv(buffer, src = src)
-            param.grad.data = buffer[0]
+            dist.recv(tensor = param.grad.data, src = src)
+            # param.grad.data = buffer[0]
         optimizer.step()
         for param in model.parameters():
-            dist.send(torch.Tensor([param.data]), dst = src)
+            dist.send(tensor = torch.Tensor([param.data]), dst = src)
 
 
 
