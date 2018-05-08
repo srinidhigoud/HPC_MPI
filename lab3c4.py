@@ -184,8 +184,9 @@ def runServer(model, optimizer):
     # for param in model.parameters():
     #     param.grad.data = 0
     # model.grad.data.zero_()
+    model.zero_grad()
     tag = torch.Tensor([0])
-    dist.recv(tag, src)
+    dist.recv(tensor = tag, src = src)
     if tag[0] == 0:
         for param in model.parameters():
             dist.send(tensor = torch.Tensor([param.data]), dst = src)
