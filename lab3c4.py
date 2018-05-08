@@ -196,7 +196,7 @@ def runServer(model, optimizer, criterion):
 
     model.zero_grad()
     optimizer.zero_grad()
-    loss = criterion(Variable(torch.zeros(17)),Variable(torch.zeros(17)))
+    loss = criterion(Variable(torch.zeros(1)),Variable(torch.zeros(1)))
     loss.backward()
     tag = torch.zeros(1)
     while True:
