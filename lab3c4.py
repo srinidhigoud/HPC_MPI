@@ -187,9 +187,7 @@ def runServer(model, optimizer):
 
     dist.recv(tag)
     src = tag[0]
-    if src == 0:
-        # ---
-    else:
+    if src != 0:
         for param in model.parameters():
             dist.recv(buffer, src = src)
             param.grad.data = buffer[0]
