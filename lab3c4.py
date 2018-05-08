@@ -136,8 +136,8 @@ def runWorker(dataset, criterion):
     # optimizer = optim.SGD(model.parameters(),
                             # lr=0.01, momentum=0.9)
 
-    num_batches = ceil(len(train_set.dataset) / float(batchSize))
-    dist.send(torch.Tensor([rank]),dst = 0)
+    num_batches = ceil(len(train_set.dataset) / float(bsz))
+    dist.send(torch.Tensor([0]),dst = 0)
     for param in model.parameters():
         dist.send(torch.Tensor([0]), dst = 0)
         dist.recv(buffer, src = 0)
@@ -162,7 +162,7 @@ def runWorker(dataset, criterion):
             # dist.recv(new_parameter, src = 0)
             # for param in new_parameter:
         torch.distributed.new_group(ranks=list(range(1,size-1)))
-        dist.send(torch.Tensor([rank]),dst = 0)
+        dist.send(torch.Tensor([0]),dst = 0)
         for param in model.parameters():
             dist.send(torch.Tensor([0]), dst = 0)
             dist.recv(buffer, src = 0)
@@ -181,14 +181,15 @@ def runWorker(dataset, criterion):
     # return loss_w[0], numberOfSamples[0]
 
 def runServer(model, optimizer):
-    torch.manual_seed(1234)
     # for param in model.parameters():
     #     param.grad.data = 0
     # model.grad.data.zero_()
     tag = torch.Tensor([0])
-    dist.recv(tag)
-    src = tag[0]
-    if src != 0:
+    dist.recv(tag, src)
+    if tag[0] == 0:
+        for param in model.parameters():
+            dist.send(torch.Tensor([param.data]), dst = src)
+    elif:
         for param in model.parameters():
             dist.recv(buffer, src = src)
             param.grad.data = buffer[0]
