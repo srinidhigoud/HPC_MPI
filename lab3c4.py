@@ -193,6 +193,7 @@ def runServer(model, optimizer):
     # for param in model.parameters():
     #     param.grad.data = 0
     # model.grad.data.zero_()
+    print("Reached")
     src = 0
     model.zero_grad()
     tag = torch.Tensor([0])
