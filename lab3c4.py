@@ -151,7 +151,6 @@ def runWorker(dataset, criterion):
         for data, target in train_set:
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
-            optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
             epoch_loss += loss.item()
