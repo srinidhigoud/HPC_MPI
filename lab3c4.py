@@ -142,9 +142,9 @@ def runWorker(dataset, criterion):
     print("sent sent ",rank)
     for param in model.parameters():
         # dist.send(tensor = torch.Tensor([0]), dst = 0)
-        print("sent ",rank)
+        # print("sent ",rank)
         dist.recv(tensor = param.data, src = 0)
-        print("received ",rank)
+    print("received ",rank)
         # param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
@@ -160,9 +160,9 @@ def runWorker(dataset, criterion):
             print("sent sent ",rank)
             for param in model.parameters():
                 dist.send(tensor = param.grad.data, dst = 0)
-                print("sent ",rank)
+                # print("sent ",rank)
                 dist.recv(tensor = param.data, src = 0)
-                print("received ",rank)
+            print("received ",rank)
                 # param.data = buffer[0]
             # dist.send(model.parameters(), dst = 0)
             # dist.recv(new_parameter, src = 0)
@@ -172,9 +172,9 @@ def runWorker(dataset, criterion):
         print("sent sent ",rank)
         for param in model.parameters():
             # dist.send(tensor = torch.Tensor([0]), dst = 0)
-            print("sent ",rank)
+            # print("sent ",rank)
             dist.recv(tensor = param.data, src = 0)
-            print("received ",rank)
+        print("received ",rank)
             # param.data = buffer[0]
 
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
@@ -204,6 +204,8 @@ def runServer(model, optimizer):
                 dist.send(tensor = param.data, dst = src)
         else:
             for param in model.parameters():
+                if param.grad == None:
+                    model.zero_grad()
                 dist.recv(tensor = param.grad.data, src = src)
                 # param.grad.data = buffer[0]
             optimizer.step()
