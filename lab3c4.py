@@ -138,10 +138,10 @@ def runWorker(dataset, criterion):
 
     num_batches = ceil(len(dataset_loader.dataset) / float(batchSize))
     dist.send(torch.Tensor([rank]),dst = 0)
-        for param in model.parameters():
-            dist.send(torch.Tensor([0]), dst = 0)
-            dist.recv(buffer, src = 0)
-            param.data = buffer[0]
+    for param in model.parameters():
+        dist.send(torch.Tensor([0]), dst = 0)
+        dist.recv(buffer, src = 0)
+        param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
