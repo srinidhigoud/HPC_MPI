@@ -184,7 +184,7 @@ def runServer(model, optimizer):
     torch.manual_seed(1234)
     # for param in model.parameters():
     #     param.grad.data = 0
-    model.grad.data.zero_()
+    # model.grad.data.zero_()
 
     dist.recv(tag)
     src = tag[0]
