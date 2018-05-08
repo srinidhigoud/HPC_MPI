@@ -189,12 +189,15 @@ def runWorker(dataset, criterion):
     print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
     # return loss_w[0], numberOfSamples[0]
 
-def runServer(model, optimizer):
+def runServer(model, optimizer, criterion):
     # for param in model.parameters():
     #     param.grad.data = 0
     # model.grad.data.zero_()
 
     model.zero_grad()
+    optimizer.zero_grad()
+    loss = criterion(Variable(torch.zeros(17)),Variable(torch.zeros(17)))
+    loss.backward()
     tag = torch.zeros(1)
     while True:
         src = dist.recv(tensor = tag)
@@ -204,8 +207,8 @@ def runServer(model, optimizer):
                 dist.send(tensor = param.data, dst = src)
         else:
             for param in model.parameters():
-                if param.grad == None:
-                    model.zero_grad()
+                # if param.grad == None:
+                #     model.zero_grad()
                 dist.recv(tensor = param.grad.data, src = src)
                 # param.grad.data = buffer[0]
             optimizer.step()
@@ -236,7 +239,7 @@ def main():
     if dist.get_rank() != 0:
         runWorker(train_dataset, criterion)
     else:
-        runServer(net, optimizer)
+        runServer(net, optimizer, criterion)
     # train_set, bsz = partition_dataset(train_dataset)
     # t0 = time.monotonic()
     # run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
