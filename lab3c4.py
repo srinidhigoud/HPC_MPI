@@ -195,18 +195,19 @@ def runServer(model, optimizer):
 
     model.zero_grad()
     tag = torch.zeros(1)
-    src = dist.recv(tensor = tag)
-    print("Reached ", src)
-    if tag[0] == 0:
-        for param in model.parameters():
-            dist.send(tensor = param.data, dst = src)
-    else:
-        for param in model.parameters():
-            dist.recv(tensor = param.grad.data, src = src)
-            # param.grad.data = buffer[0]
-        optimizer.step()
-        for param in model.parameters():
-            dist.send(tensor = param.data, dst = src)
+    while True:
+        src = dist.recv(tensor = tag)
+        print("Reached ", src)
+        if tag[0] == 0:
+            for param in model.parameters():
+                dist.send(tensor = param.data, dst = src)
+        else:
+            for param in model.parameters():
+                dist.recv(tensor = param.grad.data, src = src)
+                # param.grad.data = buffer[0]
+            optimizer.step()
+            for param in model.parameters():
+                dist.send(tensor = param.data, dst = src)
 
 
 
