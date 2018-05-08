@@ -185,7 +185,7 @@ def runServer(model, optimizer):
     # for param in model.parameters():
     #     param.grad.data = 0
     # model.grad.data.zero_()
-
+    tag = torch.Tensor([0])
     dist.recv(tag)
     src = tag[0]
     if src != 0:
