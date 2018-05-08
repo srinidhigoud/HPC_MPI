@@ -193,11 +193,11 @@ def runServer(model, optimizer):
     # for param in model.parameters():
     #     param.grad.data = 0
     # model.grad.data.zero_()
-    print("Reached")
-    src = 0
+
     model.zero_grad()
-    tag = torch.Tensor([0])
-    dist.recv(tensor = tag, src = src)
+    tag = torch.zeros(1)
+    src = dist.recv(tensor = tag)
+    print("Reached")
     if tag[0] == 0:
         for param in model.parameters():
             dist.send(tensor = torch.Tensor([param.data]), dst = src)
