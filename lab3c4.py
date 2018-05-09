@@ -139,12 +139,12 @@ def runWorker(dataset, criterion):
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     dist.send(tensor = torch.Tensor([0]),dst = 0)
-    print("sent sent ",rank)
+    # print("sent sent ",rank)
     for param in model.parameters():
         # dist.send(tensor = torch.Tensor([0]), dst = 0)
         # print("sent ",rank)
         dist.recv(tensor = param.data, src = 0)
-    print("received ",rank)
+    # print("received ",rank)
         # param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
@@ -157,28 +157,30 @@ def runWorker(dataset, criterion):
             epoch_loss += loss.item()
             loss.backward()
             dist.send(tensor = torch.Tensor([rank]),dst = 0)
-            print("sent sent ",rank)
+            # print("sent sent ",rank)
             for param in model.parameters():
                 dist.send(tensor = param.grad.data, dst = 0)
                 # print("sent ",rank)
             for param in model.parameters():
                 dist.recv(tensor = param.data, src = 0)
-            print("received ",rank)
+            # print("received ",rank)
                 # param.data = buffer[0]
             # dist.send(model.parameters(), dst = 0)
             # dist.recv(new_parameter, src = 0)
             # for param in new_parameter:
         torch.distributed.new_group(ranks=list(range(1,size-1)))
         dist.send(tensor = torch.Tensor([0]),dst = 0)
-        print("sent sent ",rank)
+        # print("sent sent ",rank)
         for param in model.parameters():
             # dist.send(tensor = torch.Tensor([0]), dst = 0)
             # print("sent ",rank)
             dist.recv(tensor = param.data, src = 0)
-        print("received ",rank)
-            # param.data = buffer[0]
-
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
+        # print("received ",rank)
+            # param.data = buffer[0]
+    dist.send(tensor = torch.Tensor([-1]),dst = 0)
+
+        
 
     print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
 
@@ -197,6 +199,7 @@ def runServer(model, optimizer, criterion):
 
     # model.zero_grad()
     # optimizer.zero_grad()
+    numberOfTimes = dist.get_world_size()-1
     for param in model.parameters():
         param.sum().backward()
     tag = torch.zeros(1)
@@ -206,6 +209,10 @@ def runServer(model, optimizer, criterion):
         if tag[0] == 0:
             for param in model.parameters():
                 dist.send(tensor = param.data, dst = src)
+        elif tag[0] == -1:
+            numberOfTimes -= 1
+            if numberOfTimes == 0:
+                break
         else:
             for param in model.parameters():
                 # if param.grad == None:
