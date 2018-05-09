@@ -167,7 +167,7 @@ def runWorker(dataset, criterion, group, model):
         # print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
     dist.send(tensor = torch.Tensor([-1]),dst = 0)
     t0 = time.monotonic()-t0
-        
+    t0 /= epochs
 
     # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
 
@@ -178,7 +178,7 @@ def runWorker(dataset, criterion, group, model):
 
     if rank == 1:
         print("\n C4 \n")
-        print(loss_w/numberOfSamples,',',t0/epochs)
+        print(loss_w/numberOfSamples,',',t0)
 
 def runServer(model):
     # model = Net()
