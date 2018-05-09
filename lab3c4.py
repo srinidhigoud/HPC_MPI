@@ -158,11 +158,10 @@ def runWorker(dataset, criterion, group):
             for param in model.parameters():
                 dist.recv(tensor = param.data, src = 0)
             # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
-        dist.barrier(group)
         dist.send(tensor = torch.Tensor([0]),dst = 0)
         for param in model.parameters():
             dist.recv(tensor = param.data, src = 0)
-        
+        dist.barrier(group)
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
     dist.send(tensor = torch.Tensor([-1]),dst = 0)
 
