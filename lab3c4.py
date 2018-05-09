@@ -179,9 +179,7 @@ def runWorker(dataset, criterion, group, model):
     dist.all_reduce(execTime, op=dist.reduce_op.SUM, group=group)
     if rank == 1:
         print("\n C4 \n")
-        avg_loss = loss_w/numberOfSamples
-        avg_time = execTime/(size-1)
-        print(avg_loss[0],',',avg_time[0])
+        print(loss_w/numberOfSamples,',',execTime/(size-1))
 
 def runServer(model):
     # model = Net()

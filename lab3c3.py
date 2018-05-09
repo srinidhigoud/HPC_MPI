@@ -178,9 +178,7 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
     dist.all_reduce(execTime, op=dist.reduce_op.SUM, group=0)
     if rank == 0:
         print("\n C3 \n")
-        avg_loss = loss_w/numberOfSamples
-        avg_time = execTime/size
-        print(avg_loss[0],',',avg_time[0])
+        print(loss_w/numberOfSamples,',',execTime/size)
 
 
 def main():
