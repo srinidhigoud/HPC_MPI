@@ -134,8 +134,8 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
     torch.manual_seed(1234)
     
 
-    # size = dist.get_world_size()
-    # rank = dist.get_rank() 
+    size = dist.get_world_size()
+    rank = dist.get_rank() 
 
     epoch_loss = 0.0
     numberOfSamples = 0
@@ -167,14 +167,18 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
     # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss / num_batches, ', number of samples ', numberOfSamples)
 
+    if rank == 1:
+        print(t0)
+    # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
+    execTime = torch.Tensor([t0])
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
     numberOfSamples = torch.Tensor([numberOfSamples])
     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
-    if dist.get_rank() == 0:
+    dist.all_reduce(execTime, op=dist.reduce_op.SUM, group=0)
+    if rank == 0:
         print("\n C3 \n")
-        print(loss_w/numberOfSamples,',',t0) 
-
+        print(loss_w/numberOfSamples,',',t0/size)
 
 
 def main():
