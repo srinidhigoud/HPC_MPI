@@ -23,7 +23,6 @@ int main(int argc, char *argv[]){
     struct timeval t1, t2;
     double elapsedTime;
     if(world_rank==0){
-        printf("\n C1 \n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
         MPI_Barrier(MPI_COMM_WORLD);
@@ -48,7 +47,7 @@ int main(int argc, char *argv[]){
         gettimeofday(&t2, NULL);
 
         elapsedTime = t2.tv_usec - t1.tv_usec;
-        printf("%4.3lf, %4.3lf\n",checksum/(world_size-1),elapsedTime/1000);
+        printf("\n C1 \n%4.3lf, %4.3lf\n",checksum/(world_size-1),elapsedTime/1000);
 
     }
     else{
