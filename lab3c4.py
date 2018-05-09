@@ -177,6 +177,7 @@ def runWorker(dataset, criterion, group, model):
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
 
     if rank == 1:
+        print("\n C4 \n")
         print(loss_w/numberOfSamples,',',t0/epochs)
 
 def runServer(model):
@@ -214,8 +215,7 @@ def runServer(model):
 
 
 def main():
-    
-    print("\n C3 \n")
+
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()
@@ -232,6 +232,7 @@ def main():
     if dist.get_rank() != 0:
         runWorker(train_dataset, criterion, group, model)
     else:
+
         runServer(model)
     # train_set, bsz = partition_dataset(train_dataset)
     # t0 = time.monotonic()

@@ -171,13 +171,14 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
     if dist.get_rank() == 0:
+        print("\n C3 \n")
         print(loss_w[0]/numberOfSamples[0],',',t0/epochs) 
 
 
 
 def main():
 
-    print("\n C3 \n")
+    
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()

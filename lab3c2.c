@@ -15,9 +15,6 @@ int main(int argc, char *argv[]){
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if(world_rank==0){
-        printf("\n C2 \n");
-    }
 
     double *I_send, *I_rec;
     struct timeval t1, t2;
@@ -49,7 +46,7 @@ int main(int argc, char *argv[]){
     gettimeofday(&t2, NULL);
 
     elapsedTime = t2.tv_usec - t1.tv_usec;
-    if(world_rank==0) printf("%4.3lf, %4.3lf\n",checksum/world_size,elapsedTime/1000);
+    if(world_rank==0) printf("\n C2 \n%4.3lf, %4.3lf\n",checksum/world_size,elapsedTime/1000);
     MPI_Finalize();
 
 }
