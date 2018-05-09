@@ -20,7 +20,7 @@ import time
 
 #parameters
 batch_size = 100   # input batch size for training
-epochs = 1       # number of epochs to train
+epochs = 5       # number of epochs to train
 lr = 0.01
 num_inputs_1 = 3072
 num_outputs_1 = 1024
@@ -121,10 +121,8 @@ class data(Dataset):
 
 
 
-def runWorker(dataset, criterion, group):
-    # print("waiting ",dist.get_rank() )
-    # workers_handle = dist.new_group([i for i in range(1, dist.get_world_size())])
-    # print("No more  ",dist.get_rank() )
+def runWorker(dataset, criterion, group, model):
+
 
     torch.manual_seed(1234)
     
@@ -136,22 +134,14 @@ def runWorker(dataset, criterion, group):
     numberOfSamples = 0
 
     train_set, bsz = partition_dataset(dataset)
-    model = Net()
-    # optimizer = optim.SGD(model.parameters(),
-                            # lr=0.01, momentum=0.9)
-    
+
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     print("started ",rank)
     dist.send(tensor = torch.Tensor([0]),dst = 0)
-    # print("sent sent ",rank)
     for param in model.parameters():
-        # dist.send(tensor = torch.Tensor([0]), dst = 0)
-        # print("sent ",rank)
         dist.recv(tensor = param.data, src = 0)
     dist.barrier(group)
-    # print("1 ",rank)
-        # param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
@@ -163,31 +153,17 @@ def runWorker(dataset, criterion, group):
             epoch_loss += loss.item()
             loss.backward()
             dist.send(tensor = torch.Tensor([rank]),dst = 0)
-            # print("sent sent ",rank)
             for param in model.parameters():
                 dist.send(tensor = param.grad.data, dst = 0)
-                # print("sent ",rank)
             for param in model.parameters():
                 dist.recv(tensor = param.data, src = 0)
-            # print("2 ",rank)
-                # param.data = buffer[0]
-            # dist.send(model.parameters(), dst = 0)
-            # dist.recv(new_parameter, src = 0)
-            # for param in new_parameter:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
-        # torch.distributed.new_group(ranks=list(range(1,size-1)))
-        # dist.barrier(workers_handle)
-        dist.send(tensor = torch.Tensor([0]),dst = 0)
-        # print("sent sent ",rank)
-        for param in model.parameters():
-            # dist.send(tensor = torch.Tensor([0]), dst = 0)
-            # print("sent ",rank)
-            dist.recv(tensor = param.data, src = 0)
+            # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
         dist.barrier(group)
-        # print("3 ",rank)
+        dist.send(tensor = torch.Tensor([0]),dst = 0)
+        for param in model.parameters():
+            dist.recv(tensor = param.data, src = 0)
+        
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
-        # print("received ",rank)
-            # param.data = buffer[0]
     dist.send(tensor = torch.Tensor([-1]),dst = 0)
 
         
@@ -196,22 +172,14 @@ def runWorker(dataset, criterion, group):
 
     loss_w = torch.Tensor([epoch_loss * numberOfSamples])
     numberOfSamples = torch.Tensor([numberOfSamples])
-    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
-    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=group)
+    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
 
     if rank == 1:
-        print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
-    # return loss_w[0], numberOfSamples[0]
+        print("Final Weighted Loss - ",(loss_w/numberOfSamples))
 
 def runServer(model, optimizer, criterion):
-    # for param in model.parameters():
-    #     param.grad.data = 0
-    # model.grad.data.zero_()
-
-    # model.zero_grad()
-    # optimizer.zero_grad()
-    # workers = list(range(1, dist.get_world_size()))
-    # workers_handle = dist.new_group(workers)
+    
     numberOfTimes = dist.get_world_size()-1
     for param in model.parameters():
         param.sum().backward()
@@ -225,14 +193,11 @@ def runServer(model, optimizer, criterion):
         elif tag[0] == -1:
             numberOfTimes -= 1
             if numberOfTimes == 0:
-                print("------------- Breaking ----------------")
+                # print("------------- Breaking ----------------")
                 break
         else:
             for param in model.parameters():
-                # if param.grad == None:
-                #     model.zero_grad()
                 dist.recv(tensor = param.grad.data, src = src)
-                # param.grad.data = buffer[0]
             optimizer.step()
             for param in model.parameters():
                 dist.send(tensor = param.data, dst = src)
@@ -260,7 +225,7 @@ def main():
     # size = dist.get_world_size()
     # rank = dist.get_rank() 
     if dist.get_rank() != 0:
-        runWorker(train_dataset, criterion, group)
+        runWorker(train_dataset, criterion, group, net)
     else:
         runServer(net, optimizer, criterion)
     # train_set, bsz = partition_dataset(train_dataset)
