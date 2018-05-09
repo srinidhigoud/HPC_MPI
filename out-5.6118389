@@ -1,0 +1,32 @@
+Job started
+c37-01
+c37-04
+c37-03
+c37-07
+c37-09
+Hello from process 1 (out of 5)
+
+Hello from process 3 (out of 5)
+
+Hello from process 0 (out of 5)
+
+Hello from process 2 (out of 5)
+Hello from process 4 (out of 5)
+
+
+started  4
+started  2
+started  3
+started  1
+Rank  1 , epoch  0 :  2.5080991268157957
+Rank  2 , epoch  0 :  2.6502449250221254
+Rank  4 , epoch  0 :  2.666947009563446
+Rank  3 , epoch  0 :  2.5028806209564207
+Rank  1 , epoch  1 :  2.4403748726844787
+Rank  2 , epoch  1 :  2.601825816631317
+Rank  3 , epoch  1 :  2.5812274026870727
+Rank  4 , epoch  1 :  2.5681283617019655
+Rank  1 , epoch  2 :  2.629179630279541
+Rank  2 , epoch  2 :  2.7167397642135622
+Rank  4 , epoch  2 :  2.72547256231308
+Rank  3 , epoch  2 :  2.5571181559562683
