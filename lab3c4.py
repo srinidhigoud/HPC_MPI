@@ -172,8 +172,8 @@ def runWorker(dataset, criterion, group, model):
 
     loss_w = torch.Tensor([epoch_loss * numberOfSamples])
     numberOfSamples = torch.Tensor([numberOfSamples])
-    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
-    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
+    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=group)
+    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
 
     if rank == 1:
         print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
