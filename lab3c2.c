@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <assert.h>
+#include <math.h>
 #include <time.h>
 #include <sys/time.h>
 #define H 1024  
@@ -45,8 +46,14 @@ int main(int argc, char *argv[]){
 
     gettimeofday(&t2, NULL);
 
-    elapsedTime = t2.tv_usec - t1.tv_usec;
-    if(world_rank==0) printf("\n C2 \n%4.3lf, %4.3lf\n",checksum/world_size,elapsedTime/1000);
+    elapsedTime = t2.tv_sec - t1.tv_sec;
+    elapsedTimeMicro = t2.tv_usec - t1.tv_usec;
+    if (elapsedTimeMicro < 0){
+        elapsedTime -= 1;
+    }
+    long totalTime = (elapsedTime * 1000000) + abs(elapsedTimeMicro);
+        // printf("\n C1 \n%4.3lf, %4.3lf\n",checksum/(world_size-1),totalTime/1000);
+    if(world_rank==0) printf("\n C2 \n%4.3lf, %4.3lf\n",checksum/world_size,totalTime/1000);
     MPI_Finalize();
 
 }

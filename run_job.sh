@@ -29,7 +29,7 @@ $BIN_PATH/mpirun -n $(($R-1)) ./lab3c2
 
 
 #Uncomment to execute pytorch code
-$BIN_PATH/mpirun -n $R $BIN_PATH/python ./mpi_test.py
+# $BIN_PATH/mpirun -n $R $BIN_PATH/python ./mpi_test.py
 $BIN_PATH/mpirun -n $(($R-1)) $BIN_PATH/python ./lab3c3.py
 $BIN_PATH/mpirun -n $R $BIN_PATH/python ./lab3c4.py
 echo "Job completed"

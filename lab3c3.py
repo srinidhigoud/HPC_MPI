@@ -40,7 +40,7 @@ class Net(nn.Module):
         input = input.view(-1, num_inputs_1) # reshape input to batch x num_inputs
         z = F.relu(self.linear1(input))
         z = F.relu(self.linear2(z))
-        output = F.log_softmax(self.linear3(z))
+        output = F.log_softmax(self.linear3(z),0)
         return output
 
 
