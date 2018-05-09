@@ -20,7 +20,7 @@ import time
 
 #parameters
 batch_size = 100   # input batch size for training
-epochs = 1       # number of epochs to train
+epochs = 5       # number of epochs to train
 lr = 0.01
 num_inputs_1 = 3072
 num_outputs_1 = 1024
