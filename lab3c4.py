@@ -161,6 +161,7 @@ def runWorker(dataset, criterion):
             for param in model.parameters():
                 dist.send(tensor = param.grad.data, dst = 0)
                 # print("sent ",rank)
+            for param in model.parameters():
                 dist.recv(tensor = param.data, src = 0)
             print("received ",rank)
                 # param.data = buffer[0]
