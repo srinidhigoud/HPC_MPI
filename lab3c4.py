@@ -168,7 +168,7 @@ def runWorker(dataset, criterion, group):
 
         
 
-    print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
+    print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ um_batches, ', number of samples ', numberOfSamples)
 
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
     numberOfSamples = torch.Tensor([numberOfSamples])
