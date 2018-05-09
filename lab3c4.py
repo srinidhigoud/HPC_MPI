@@ -181,6 +181,7 @@ def runWorker(dataset, criterion, group):
 def runServer():
     model = Net()
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
+    optimizer.zero_grad
     numberOfTimes = dist.get_world_size()-1
     for param in model.parameters():
         param.sum().backward()
