@@ -121,10 +121,10 @@ class data(Dataset):
 
 
 
-def runWorker(dataset, criterion):
-    print("waiting ",dist.get_rank() )
-    workers_handle = dist.new_group([i for i in range(1, dist.get_world_size())])
-    print("No more  ",dist.get_rank() )
+def runWorker(dataset, criterion, group):
+    # print("waiting ",dist.get_rank() )
+    # workers_handle = dist.new_group([i for i in range(1, dist.get_world_size())])
+    # print("No more  ",dist.get_rank() )
 
     torch.manual_seed(1234)
     
@@ -149,6 +149,7 @@ def runWorker(dataset, criterion):
         # dist.send(tensor = torch.Tensor([0]), dst = 0)
         # print("sent ",rank)
         dist.recv(tensor = param.data, src = 0)
+    dist.barrier(group)
     # print("1 ",rank)
         # param.data = buffer[0]
     for epoch in range(epochs):
@@ -182,7 +183,7 @@ def runWorker(dataset, criterion):
             # dist.send(tensor = torch.Tensor([0]), dst = 0)
             # print("sent ",rank)
             dist.recv(tensor = param.data, src = 0)
-        dist.barrier(workers_handle)
+        dist.barrier(group)
         # print("3 ",rank)
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
         # print("received ",rank)
@@ -255,10 +256,11 @@ def main():
     
     train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
     dist.init_process_group(backend="mpi")
+    group = dist.new_group([i for i in range(1, dist.get_world_size())])
     # size = dist.get_world_size()
     # rank = dist.get_rank() 
     if dist.get_rank() != 0:
-        runWorker(train_dataset, criterion)
+        runWorker(train_dataset, criterion, group)
     else:
         runServer(net, optimizer, criterion)
     # train_set, bsz = partition_dataset(train_dataset)
