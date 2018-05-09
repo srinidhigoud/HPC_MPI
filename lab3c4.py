@@ -121,11 +121,11 @@ class data(Dataset):
 
 
 
-def runWorker(dataset, criterion, group, model):
+def runWorker(dataset, criterion, group):
 
 
     torch.manual_seed(1234)
-    
+    model = Net()
 
     size = dist.get_world_size()
     rank = dist.get_rank() 
@@ -178,8 +178,9 @@ def runWorker(dataset, criterion, group, model):
     if rank == 1:
         print("Final Weighted Loss - ",(loss_w/numberOfSamples))
 
-def runServer(model, optimizer, criterion):
-    
+def runServer():
+    model = Net()
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
     numberOfTimes = dist.get_world_size()-1
     for param in model.parameters():
         param.sum().backward()
@@ -215,9 +216,9 @@ def main():
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()
                             ])
-    net = Net()
+    
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
+    # optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
     
     train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
     dist.init_process_group(backend="mpi")
@@ -225,9 +226,9 @@ def main():
     # size = dist.get_world_size()
     # rank = dist.get_rank() 
     if dist.get_rank() != 0:
-        runWorker(train_dataset, criterion, group, net)
+        runWorker(train_dataset, criterion, group)
     else:
-        runServer(net, optimizer, criterion)
+        runServer()
     # train_set, bsz = partition_dataset(train_dataset)
     # t0 = time.monotonic()
     # run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
