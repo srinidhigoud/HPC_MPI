@@ -136,6 +136,8 @@ def runWorker(dataset, criterion):
     model = Net()
     # optimizer = optim.SGD(model.parameters(),
                             # lr=0.01, momentum=0.9)
+    workers = list(range(1, dist.get_world_size()-1))
+    workers_handle = dist.new_group(workers)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     print("started ",rank)
@@ -170,7 +172,8 @@ def runWorker(dataset, criterion):
             # dist.recv(new_parameter, src = 0)
             # for param in new_parameter:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
-        torch.distributed.new_group(ranks=list(range(1,size-1)))
+        # torch.distributed.new_group(ranks=list(range(1,size-1)))
+        dist.barrier(workers_handle)
         dist.send(tensor = torch.Tensor([0]),dst = 0)
         # print("sent sent ",rank)
         for param in model.parameters():
