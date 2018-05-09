@@ -205,7 +205,7 @@ def runServer(model, optimizer, criterion):
     tag = torch.zeros(1)
     while True:
         src = dist.recv(tensor = tag)
-        print("Reached ", src)
+        # print("Reached ", src)
         if tag[0] == 0:
             for param in model.parameters():
                 dist.send(tensor = param.data, dst = src)
