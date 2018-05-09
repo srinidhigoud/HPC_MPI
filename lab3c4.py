@@ -121,7 +121,7 @@ class data(Dataset):
 
 
 
-def runWorker(dataset, criterion, group):
+def runWorker(dataset, criterion, group, model):
 
 
     torch.manual_seed(1234)
@@ -134,7 +134,6 @@ def runWorker(dataset, criterion, group):
     numberOfSamples = 0
 
     train_set, bsz = partition_dataset(dataset)
-    model = Net()
 
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
@@ -158,7 +157,7 @@ def runWorker(dataset, criterion, group):
                 dist.send(tensor = param.grad.data, dst = 0)
             for param in model.parameters():
                 dist.recv(tensor = param.data, src = 0)
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
+            # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
         dist.barrier(group)
         dist.send(tensor = torch.Tensor([0]),dst = 0)
         for param in model.parameters():
@@ -226,7 +225,7 @@ def main():
     # size = dist.get_world_size()
     # rank = dist.get_rank() 
     if dist.get_rank() != 0:
-        runWorker(train_dataset, criterion, group)
+        runWorker(train_dataset, criterion, group, net)
     else:
         runServer(net, optimizer, criterion)
     # train_set, bsz = partition_dataset(train_dataset)
