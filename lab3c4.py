@@ -20,7 +20,7 @@ import time
 
 #parameters
 batch_size = 100   # input batch size for training
-epochs = 5       # number of epochs to train
+epochs = 1       # number of epochs to train
 lr = 0.01
 num_inputs_1 = 3072
 num_outputs_1 = 1024
@@ -168,7 +168,7 @@ def runWorker(dataset, criterion, group):
 
         
 
-    print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ um_batches, ', number of samples ', numberOfSamples)
+    print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
 
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
     numberOfSamples = torch.Tensor([numberOfSamples])
