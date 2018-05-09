@@ -150,7 +150,7 @@ def runWorker(dataset, criterion):
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
-        for data, target in train_set:
+        for batch_idx, (data, target) in enumerate(train_set):
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
             output = model(data)
@@ -169,6 +169,7 @@ def runWorker(dataset, criterion):
             # dist.send(model.parameters(), dst = 0)
             # dist.recv(new_parameter, src = 0)
             # for param in new_parameter:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
         torch.distributed.new_group(ranks=list(range(1,size-1)))
         dist.send(tensor = torch.Tensor([0]),dst = 0)
         # print("sent sent ",rank)
