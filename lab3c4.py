@@ -123,7 +123,7 @@ class data(Dataset):
 
 def runWorker(dataset, criterion):
     print("waiting ",dist.get_rank() )
-    workers_handle = dist.new_group([i for i in range(1, dist.get_world_size()-1)])
+    workers_handle = dist.new_group([i for i in range(1, dist.get_world_size())])
     print("No more  ",dist.get_rank() )
 
     torch.manual_seed(1234)
