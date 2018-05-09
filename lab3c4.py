@@ -144,7 +144,7 @@ def runWorker(dataset, criterion):
         # dist.send(tensor = torch.Tensor([0]), dst = 0)
         # print("sent ",rank)
         dist.recv(tensor = param.data, src = 0)
-    # print("received ",rank)
+    print("1 ",rank)
         # param.data = buffer[0]
     for epoch in range(epochs):
         epoch_loss = 0.0
@@ -163,7 +163,7 @@ def runWorker(dataset, criterion):
                 # print("sent ",rank)
             for param in model.parameters():
                 dist.recv(tensor = param.data, src = 0)
-            # print("received ",rank)
+            print("2 ",rank)
                 # param.data = buffer[0]
             # dist.send(model.parameters(), dst = 0)
             # dist.recv(new_parameter, src = 0)
@@ -175,6 +175,7 @@ def runWorker(dataset, criterion):
             # dist.send(tensor = torch.Tensor([0]), dst = 0)
             # print("sent ",rank)
             dist.recv(tensor = param.data, src = 0)
+        print("3 ",rank)
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
         # print("received ",rank)
             # param.data = buffer[0]
