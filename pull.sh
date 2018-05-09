@@ -1,6 +1,7 @@
 #!/bin/bash
 
-rm core*
+rm out* core*
 git pull origin master
-make
-./run_job.sh 5
+./pull1.sh
+./pull2.sh
+./pull3.sh
