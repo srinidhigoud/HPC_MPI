@@ -194,8 +194,10 @@ def runServer(model, optimizer, criterion):
     #     param.grad.data = 0
     # model.grad.data.zero_()
 
-    model.zero_grad()
-    optimizer(model.parameters()).zero_grad()
+    # model.zero_grad()
+    # optimizer.zero_grad()
+    for param in model.parameters():
+        param.sum().backward()
     tag = torch.zeros(1)
     while True:
         src = dist.recv(tensor = tag)
@@ -209,7 +211,7 @@ def runServer(model, optimizer, criterion):
                 #     model.zero_grad()
                 dist.recv(tensor = param.grad.data, src = src)
                 # param.grad.data = buffer[0]
-            optimizer(model).step()
+            optimizer.step()
             for param in model.parameters():
                 dist.send(tensor = param.data, dst = src)
 
