@@ -49,7 +49,8 @@ int main(int argc, char *argv[]){
         long totalTime = (t2.tv_sec*1e6 + t2.tv_usec) - (t1.tv_sec*1e6 + t1.tv_usec);
 
         printf("\n C1 \n%4.3lf,",checksum/world_size);
-        // printf("%4.3lf\n",totalTime/1000);
+        fflush(stdout);
+        printf("%4.3lf\n",totalTime/1000);
 
     }
     else{
