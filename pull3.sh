@@ -3,4 +3,4 @@
 rm core*
 git pull origin master
 make
-./run_job.sh 5
+./run_job.sh 17
