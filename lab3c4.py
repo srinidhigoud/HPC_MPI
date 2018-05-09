@@ -205,8 +205,8 @@ def runServer(model, optimizer, criterion):
 
     # model.zero_grad()
     # optimizer.zero_grad()
-    workers = list(range(1, dist.get_world_size()))
-    workers_handle = dist.new_group(workers)
+    # workers = list(range(1, dist.get_world_size()))
+    # workers_handle = dist.new_group(workers)
     numberOfTimes = dist.get_world_size()-1
     for param in model.parameters():
         param.sum().backward()
