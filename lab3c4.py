@@ -176,7 +176,7 @@ def runWorker(dataset, criterion, group, model):
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
 
     if rank == 1:
-        print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
+        print("Final Weighted Loss - ",(loss_w/numberOfSamples))
 
 def runServer(model, optimizer, criterion):
     
