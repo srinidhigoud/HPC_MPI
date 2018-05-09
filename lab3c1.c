@@ -3,7 +3,6 @@
 #include <mpi.h>
 #include <assert.h>
 #include <time.h>
-#include <math.h>
 #include <sys/time.h>
 #define H 1024  
 #define W 1024
@@ -22,6 +21,7 @@ int main(int argc, char *argv[]){
     MPI_Status status2;
     double *buff;
     struct timeval t1, t2;
+    double elapsedTime;
     if(world_rank==0){
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
@@ -45,13 +45,9 @@ int main(int argc, char *argv[]){
         }
 
         gettimeofday(&t2, NULL);
-        long elapsedTime = t2.tv_sec - t1.tv_sec;
-        long elapsedTimeMicro = t2.tv_usec - t1.tv_usec;
-        if (elapsedTimeMicro < 0){
-            elapsedTime -= 1;
-        }
-        long totalTime = (elapsedTime * 1000000) + abs(elapsedTimeMicro);
-        printf("\n C1 \n%4.3lf, %4.3lf\n",checksum/(world_size-1),totalTime/1000);
+
+        elapsedTime = t2.tv_usec - t1.tv_usec;
+        printf("%4.3lf, %4.3lf\n",checksum/(world_size-1),elapsedTime/1000);
 
     }
     else{
