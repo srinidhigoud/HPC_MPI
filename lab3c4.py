@@ -181,7 +181,7 @@ def runWorker(dataset, criterion, group):
 def runServer():
     model = Net()
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
-    optimizer.zero_grad
+    optimizer.zero_grad()
     numberOfTimes = dist.get_world_size()-1
     for param in model.parameters():
         param.sum().backward()
@@ -202,7 +202,7 @@ def runServer():
             for param in model.parameters():
                 dist.recv(tensor = param.grad.data, src = src)
             optimizer.step()
-            optimizer.zero_grad
+            optimizer.zero_grad()
             for param in model.parameters():
                 dist.send(tensor = param.data, dst = src)
 
