@@ -1,0 +1,166 @@
+Job started
+c39-13
+c39-07
+c39-02
+c39-14
+c39-10
+c33-03
+c39-12
+c39-16
+c39-08
+c39-05
+c39-11
+c39-03
+c39-09
+c39-04
+c33-04
+c39-01
+c33-02
+Hello from process 0 (out of 17)
+Hello from process 16 (out of 17)
+
+Hello from process 11 (out of 17)
+Hello from process 12 (out of 17)
+
+Hello from process 14 (out of 17)
+Hello from process 4 (out of 17)
+
+Hello from process 3 (out of 17)
+
+
+Hello from process 8 (out of 17)
+
+Hello from process 13 (out of 17)
+Hello from process 5 (out of 17)
+Hello from process 15 (out of 17)
+
+
+
+Hello from process 1 (out of 17)
+
+Hello from process 9 (out of 17)
+Hello from process 10 (out of 17)
+Hello from process 6 (out of 17)
+
+Hello from process 2 (out of 17)
+Hello from process 7 (out of 17)
+
+
+
+
+
+
+started  11
+started  1
+started  15
+started  4
+started  3
+started  14
+started  16
+started  12
+started  5
+started  13
+started  8
+started  7
+started  9
+started  10
+started  2
+started  6
+Rank  1 , epoch  0 :  2.794092691861666
+Rank  3 , epoch  0 :  2.8393428875849795
+Rank  5 , epoch  0 :  2.840504151124221
+Rank  9 , epoch  0 :  2.822295408982497
+Rank  2 , epoch  0 :  2.7957936433645396
+Rank  11 , epoch  0 :  2.7766114931840162
+Rank  13 , epoch  0 :  2.828856138082651
+Rank  10 , epoch  0 :  2.801721297777616
+Rank  4 , epoch  0 :  2.8033632315122166
+Rank  7 , epoch  0 :  2.8594934390141415
+Rank  6 , epoch  0 :  2.8598553217374363
+Rank  15 , epoch  0 :  2.830427646636963
+Rank  8 , epoch  0 :  2.8303960286653957
+Rank  12 , epoch  0 :  2.8155075953556943
+Rank  14 , epoch  0 :  2.8196724561544566
+Rank  16 , epoch  0 :  2.791716318864089
+Rank  1 , epoch  1 :  2.7123636099008412
+Rank  2 , epoch  1 :  2.724961904379038
+Rank  5 , epoch  1 :  2.724802769147433
+Rank  9 , epoch  1 :  2.746529762561505
+Rank  3 , epoch  1 :  2.75070570065425
+Rank  11 , epoch  1 :  2.7724789656125584
+Rank  13 , epoch  1 :  2.73835459122291
+Rank  10 , epoch  1 :  2.7436205056997447
+Rank  15 , epoch  1 :  2.756146816106943
+Rank  7 , epoch  1 :  2.771358214891874
+Rank  4 , epoch  1 :  2.7292967392848086
+Rank  6 , epoch  1 :  2.7474066477555494
+Rank  14 , epoch  1 :  2.763522771688608
+Rank  8 , epoch  1 :  2.751683290188129
+Rank  12 , epoch  1 :  2.7750841287466197
+Rank  16 , epoch  1 :  2.7679761923276462
+Rank  14 , epoch  2 :  3.4429566860198975
+Rank  16 , epoch  2 :  3.1890011567335863
+Rank  13 , epoch  2 :  3.057054180365342
+Rank  10 , epoch  2 :  3.4730443954467773
+Rank  6 , epoch  2 :  3.034626153799204
+Rank  12 , epoch  2 :  3.5572584592379055
+Rank  8 , epoch  2 :  3.8739017890049863
+Rank  15 , epoch  2 :  3.3267430708958554
+Rank  4 , epoch  2 :  3.781297344427842
+Rank  5 , epoch  2 :  3.5684493963535013
+Rank  9 , epoch  2 :  2.939500148479755
+Rank  2 , epoch  2 :  3.577069172492394
+Rank  11 , epoch  2 :  3.370953138058002
+Rank  3 , epoch  2 :  2.9779442090254564
+Rank  7 , epoch  2 :  3.425939752505376
+Rank  1 , epoch  2 :  3.063491729589609
+Rank  3 , epoch  3 :  61.04093643335196
+Rank  7 , epoch  3 :  74.96459874740013
+Rank  11 , epoch  3 :  29.106509061960075
+Rank  1 , epoch  3 :  84.56896783755376
+Rank  4 , epoch  3 :  246.5713172875918
+Rank  15 , epoch  3 :  150.54080941126898
+Rank  5 , epoch  3 :  5546.606485770299
+Rank  9 , epoch  3 :  566.7497800680308
+Rank  2 , epoch  3 :  50.94382045819209
+Rank  12 , epoch  3 :  74.05590132566599
+Rank  13 , epoch  3 :  72.17982073930594
+Rank  8 , epoch  3 :  56.16127723913927
+Rank  10 , epoch  3 :  706.6156295996445
+Rank  16 , epoch  3 :  5722.106781427677
+Rank  6 , epoch  3 :  3354.8857983625853
+Rank  14 , epoch  3 :  132.50705199975235
+Rank  3 , epoch  4 :  nan
+Rank  11 , epoch  4 :  nan
+Rank  3 , epoch_loss  nan , number of samples  1250
+Rank  4 , epoch  4 :  nan
+Rank  1 , epoch  4 :  nan
+Rank  9 , epoch  4 :  nan
+Rank  5 , epoch  4 :  nan
+Rank  12 , epoch  4 :  nan
+Rank  11 , epoch_loss  nan , number of samples  1250
+Rank  8 , epoch  4 :  nan
+Rank  7 , epoch  4 :  nan
+Rank  16 , epoch  4 :  nan
+Rank  15 , epoch  4 :  nan
+Rank  4 , epoch_loss  nan , number of samples  1250
+Rank  10 , epoch  4 :  nan
+Rank  5 , epoch_loss  nan , number of samples  1250
+Rank  9 , epoch_loss  nan , number of samples  1250
+Rank  1 , epoch_loss  nan , number of samples  1250
+Rank  2 , epoch  4 :  nan
+Rank  8 , epoch_loss  nan , number of samples  1250
+Rank  12 , epoch_loss  nan , number of samples  1250
+Rank  16 , epoch_loss  nan , number of samples  1250
+Rank  13 , epoch  4 :  nan
+Rank  14 , epoch  4 :  nan
+Rank  10 , epoch_loss  nan , number of samples  1250
+Rank  7 , epoch_loss  nan , number of samples  1250
+Rank  6 , epoch  4 :  nan
+Rank  15 , epoch_loss  nan , number of samples  1250
+Rank  13 , epoch_loss  nan , number of samples  1250
+Rank  2 , epoch_loss  nan , number of samples  1250
+Rank  14 , epoch_loss  nan , number of samples  1250
+Rank  6 , epoch_loss  nan , number of samples  1250
+Final Weighted Loss -  tensor([nan.])
+Job completed

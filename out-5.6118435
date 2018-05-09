@@ -1,0 +1,33 @@
+Job started
+c37-04
+c37-01
+c37-09
+c37-07
+c37-03
+Hello from process 0 (out of 5)
+
+Hello from process 2 (out of 5)
+
+Hello from process 4 (out of 5)
+
+Hello from process 1 (out of 5)
+
+Hello from process 3 (out of 5)
+
+started  2
+started  3
+started  4
+started  1
+Rank  1 , epoch  0 :  2.174355993270874
+Rank  2 , epoch  0 :  2.441043598651886
+Rank  4 , epoch  0 :  2.603885726928711
+Rank  3 , epoch  0 :  2.463917372226715
+Rank  1 , epoch  1 :  2.1961579060554506
+Rank  2 , epoch  1 :  2.3839000630378724
+Rank  3 , epoch  1 :  2.2466329240798952
+Rank  4 , epoch  1 :  2.3393437266349792
+Rank  3 , epoch  2 :  2.3174940180778503
+Rank  1 , epoch  2 :  2.25610098361969
+Rank  2 , epoch  2 :  2.272182033061981
+Rank  4 , epoch  2 :  2.284565718173981
+slurmstepd: error: *** JOB 6118435 ON c37-01 CANCELLED AT 2018-05-09T00:45:22 ***
