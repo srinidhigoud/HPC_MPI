@@ -9,7 +9,6 @@
 #define C 3
 
 int main(int argc, char *argv[]){
-    printf("\n C1 \n");
     int world_rank, world_size; 
     double checksum = 0;
     MPI_Init(&argc,&argv); 
@@ -24,6 +23,7 @@ int main(int argc, char *argv[]){
     struct timeval t1, t2;
     double elapsedTime;
     if(world_rank==0){
+        printf("\n C1 \n");
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
         MPI_Barrier(MPI_COMM_WORLD);

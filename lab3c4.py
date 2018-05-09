@@ -214,7 +214,7 @@ def runServer(model):
 
 
 def main():
-
+    
     print("\n C3 \n")
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),

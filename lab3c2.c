@@ -9,12 +9,16 @@
 #define C 3
 
 int main(int argc, char *argv[]){
-    printf("\n C2 \n");
+
     int world_rank, world_size; 
     double checksum = 0;
     MPI_Init(&argc,&argv); 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    if(world_rank==0){
+        printf("\n C2 \n");
+    }
+
     double *I_send, *I_rec;
     struct timeval t1, t2;
     double elapsedTime;
