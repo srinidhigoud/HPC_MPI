@@ -1,5 +1,5 @@
 #!/bin/bash
-
+scancel -u sgm400
 rm out* core*
 git pull origin master
 make
