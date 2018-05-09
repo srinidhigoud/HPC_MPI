@@ -22,7 +22,6 @@ int main(int argc, char *argv[]){
     MPI_Status status2;
     double *buff;
     struct timeval t1, t2;
-    long elapsedTime;
     if(world_rank==0){
         buff = (double*)malloc(sizeof(double)*(world_size-1)*C*H*W);
         O = (double*)calloc(C*H*W, sizeof(double));
@@ -46,8 +45,8 @@ int main(int argc, char *argv[]){
         }
 
         gettimeofday(&t2, NULL);
-        elapsedTime = t2.tv_sec - t1.tv_sec;
-        elapsedTimeMicro = t2.tv_usec - t1.tv_usec;
+        long elapsedTime = t2.tv_sec - t1.tv_sec;
+        long elapsedTimeMicro = t2.tv_usec - t1.tv_usec;
         if (elapsedTimeMicro < 0){
             elapsedTime -= 1;
         }

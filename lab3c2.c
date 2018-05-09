@@ -19,7 +19,6 @@ int main(int argc, char *argv[]){
 
     double *I_send, *I_rec;
     struct timeval t1, t2;
-    double elapsedTime;
     I_send = (double*)malloc(sizeof(double)*C*H*W);
     I_rec = (double*)malloc(sizeof(double)*C*H*W);
 
@@ -46,8 +45,8 @@ int main(int argc, char *argv[]){
 
     gettimeofday(&t2, NULL);
 
-    elapsedTime = t2.tv_sec - t1.tv_sec;
-    elapsedTimeMicro = t2.tv_usec - t1.tv_usec;
+    long elapsedTime = t2.tv_sec - t1.tv_sec;
+    long elapsedTimeMicro = t2.tv_usec - t1.tv_usec;
     if (elapsedTimeMicro < 0){
         elapsedTime -= 1;
     }
