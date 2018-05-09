@@ -173,13 +173,14 @@ def runWorker(dataset, criterion):
             # for param in new_parameter:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
         # torch.distributed.new_group(ranks=list(range(1,size-1)))
-        dist.barrier(workers_handle)
+        # dist.barrier(workers_handle)
         dist.send(tensor = torch.Tensor([0]),dst = 0)
         # print("sent sent ",rank)
         for param in model.parameters():
             # dist.send(tensor = torch.Tensor([0]), dst = 0)
             # print("sent ",rank)
             dist.recv(tensor = param.data, src = 0)
+        dist.barrier(workers_handle)
         # print("3 ",rank)
         print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
         # print("received ",rank)
@@ -221,6 +222,7 @@ def runServer(model, optimizer, criterion):
         elif tag[0] == -1:
             numberOfTimes -= 1
             if numberOfTimes == 0:
+                print("------------- Breaking ----------------")
                 break
         else:
             for param in model.parameters():
