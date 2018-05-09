@@ -170,7 +170,7 @@ def runWorker(dataset, criterion, group):
 
     print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss, ', number of samples ', numberOfSamples)
 
-    loss_w = torch.Tensor([epoch_loss * numberOfSamples])
+    loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
     numberOfSamples = torch.Tensor([numberOfSamples])
     dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=group)
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
