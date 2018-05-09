@@ -9,6 +9,7 @@
 #define C 3
 
 int main(int argc, char *argv[]){
+    printf("\n C2 \n");
     int world_rank, world_size; 
     double checksum = 0;
     MPI_Init(&argc,&argv); 

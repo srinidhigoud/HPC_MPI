@@ -137,7 +137,8 @@ def runWorker(dataset, criterion, group, model):
 
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
-    print("started ",rank)
+    # print("started ",rank)
+    t0 = time.monotonic()
     dist.send(tensor = torch.Tensor([0]),dst = 0)
     for param in model.parameters():
         dist.recv(tensor = param.data, src = 0)
@@ -163,12 +164,12 @@ def runWorker(dataset, criterion, group, model):
         for param in model.parameters():
             dist.recv(tensor = param.data, src = 0)
         dist.barrier(group)
-        print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
+        # print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
     dist.send(tensor = torch.Tensor([-1]),dst = 0)
-
+    t0 = time.monotonic()-t0
         
 
-    print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
+    # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
 
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
     numberOfSamples = torch.Tensor([numberOfSamples])
@@ -176,7 +177,7 @@ def runWorker(dataset, criterion, group, model):
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
 
     if rank == 1:
-        print("Final Weighted Loss - ",(loss_w/numberOfSamples))
+        print(loss_w/numberOfSamples,',',t0/epochs)
 
 def runServer(model):
     # model = Net()
@@ -214,7 +215,7 @@ def runServer(model):
 
 def main():
 
-
+    print("\n C3 \n")
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()
