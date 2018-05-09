@@ -173,7 +173,7 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
     dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
     if dist.get_rank() == 0:
         print("\n C3 \n")
-        print(loss_w[0]/numberOfSamples[0],',',t0) 
+        print(loss_w/numberOfSamples,',',t0) 
 
 
 
