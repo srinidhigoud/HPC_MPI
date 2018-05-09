@@ -126,7 +126,7 @@ def runWorker(dataset, criterion, group):
 
     torch.manual_seed(1234)
     model = Net()
-
+    # optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
     size = dist.get_world_size()
     rank = dist.get_rank() 
 
@@ -148,6 +148,7 @@ def runWorker(dataset, criterion, group):
         for batch_idx, (data, target) in enumerate(train_set):
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
+            model.zero_grad()
             output = model(data)
             loss = criterion(output, target)
             epoch_loss += loss.item()
@@ -185,6 +186,7 @@ def runServer():
         param.sum().backward()
     tag = torch.zeros(1)
     while True:
+
         src = dist.recv(tensor = tag)
         # print("Reached ", src)
         if tag[0] == 0:
