@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    // MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
     gettimeofday(&t1, NULL);
     MPI_Allreduce(I_send, I_rec, C*H*W, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     
