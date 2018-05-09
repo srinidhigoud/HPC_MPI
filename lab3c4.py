@@ -137,7 +137,7 @@ def runWorker(dataset, criterion):
     # optimizer = optim.SGD(model.parameters(),
                             # lr=0.01, momentum=0.9)
     print("waiting ",rank)
-    workers_handle = dist.new_group([i for i in range(1, dist.get_world_size())])
+    workers_handle = dist.new_group([i for i in range(1, dist.get_world_size()-1)])
     print("No more  ",rank)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
