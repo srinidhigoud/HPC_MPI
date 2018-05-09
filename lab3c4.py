@@ -138,6 +138,7 @@ def runWorker(dataset, criterion):
                             # lr=0.01, momentum=0.9)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
+    print("started ",rank)
     dist.send(tensor = torch.Tensor([0]),dst = 0)
     # print("sent sent ",rank)
     for param in model.parameters():
