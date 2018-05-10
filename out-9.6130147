@@ -1,0 +1,14 @@
+Job started
+173.92308503175155
+
+ C3 
+
+tensor([ 1.8215]) , tensor([ 173.9233])
+115.5146537553519
+
+ C4 
+
+tensor([ 2.7511]) , tensor([ 115.5144])
+Job completed
+slurmstepd: error: Exceeded step memory limit at some point.
+slurmstepd: error: This may or may not result in some failure. The SLURM utilizes Linux cgroups for resource containment. For reference please read the explanation in the bug report: https://bugs.schedmd.com/show_bug.cgi?id=3214#c4
