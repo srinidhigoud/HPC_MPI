@@ -1,3 +1,4 @@
 Job started
 [c37-05][[38002,1],10][btl_tcp_endpoint.c:796:mca_btl_tcp_endpoint_complete_connect] connect() to 172.16.2.144 failed: No route to host (113)
 [c40-05][[38002,1],14][btl_tcp_endpoint.c:796:mca_btl_tcp_endpoint_complete_connect] connect() to 172.16.2.192 failed: No route to host (113)
+slurmstepd: error: *** JOB 6136903 ON c32-01 CANCELLED AT 2018-05-09T22:42:47 ***
