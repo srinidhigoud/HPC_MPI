@@ -17,7 +17,7 @@ sbatch << EOF
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=c32_41
-#SBATCH --output=out-$R.%j
+#SBATCH --output=outC2-$R.%j
 
 module load openmpi/intel/2.0.1
 
