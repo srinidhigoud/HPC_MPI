@@ -168,8 +168,8 @@ def runWorker(dataset, criterion, group, model):
     dist.send(tensor = torch.Tensor([-1]),dst = 0)
     t0 = time.monotonic()-t0
     t0 /= epochs
-    if rank == 1:
-        print(t0)
+    # if rank == 1:
+    #     print(t0)
     # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
     execTime = torch.Tensor([t0])
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])

@@ -167,8 +167,8 @@ def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
     # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss / num_batches, ', number of samples ', numberOfSamples)
 
-    if rank == 1:
-        print(t0)
+    # if rank == 1:
+    #     print(t0)
     # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
     execTime = torch.Tensor([t0])
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
