@@ -27,6 +27,7 @@ num_outputs_1 = 1024
 num_outputs_2 = 256
 num_outputs_3 = 17
 
+
 """ Dataset partitioning helper """
 
 class Net(nn.Module):
@@ -76,6 +77,20 @@ class DataPartitioner(object):
         return Partition(self.data, self.partitions[partition])
 
 
+def partition_dataset(dataset):
+   
+    size = dist.get_world_size()-1
+    bsz = batch_size
+    partition_sizes = [1.0 / size for _ in range(size)]
+    partition = DataPartitioner(dataset, partition_sizes)
+    partition = partition.use(dist.get_rank()-1)
+    data_set = DataLoader(partition,
+                            batch_size=bsz,
+                            shuffle=True)
+    return data_set, bsz
+
+
+
 class data(Dataset):
 
     def __init__(self, csv_file, root_dir, transform=None):
@@ -105,113 +120,130 @@ class data(Dataset):
 
 
 
-def average_gradients(model):
-    size = float(dist.get_world_size())
-    for param in model.parameters():
-        dist.all_reduce(param.grad.data,
-                        op=dist.reduce_op.SUM)
-        param.grad.data /= size
 
+def runWorker(dataset, criterion, group, model):
 
-
-def partition_dataset(dataset):
-   
-    size = dist.get_world_size()
-    bsz = batch_size
-    partition_sizes = [1.0 / size for _ in range(size)]
-    partition = DataPartitioner(dataset, partition_sizes)
-    partition = partition.use(dist.get_rank())
-    data_set = DataLoader(partition,
-                            batch_size=bsz,
-                            shuffle=True)
-    return data_set, bsz
-
-
-
-
-def run(rank, size, dataset_loader, batchSize, model, optimizer, criterion):
 
     torch.manual_seed(1234)
-    
-
+    # model = Net()
+    # optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
     size = dist.get_world_size()
     rank = dist.get_rank() 
 
     epoch_loss = 0.0
     numberOfSamples = 0
 
-    # train_set, bsz = partition_dataset(dataset)
-    # model = Net()
-    # optimizer = optim.SGD(model.parameters(),
-                            # lr=0.01, momentum=0.9)
+    train_set, bsz = partition_dataset(dataset)
 
-    num_batches = ceil(len(dataset_loader.dataset) / float(batchSize))
+
+    num_batches = ceil(len(train_set.dataset) / float(bsz))
+    # print("started ",rank)
     t0 = time.monotonic()
+    dist.send(tensor = torch.Tensor([0]),dst = 0)
+    for param in model.parameters():
+        dist.recv(tensor = param.data, src = 0)
+    dist.barrier(group)
     for epoch in range(epochs):
         epoch_loss = 0.0
         numberOfSamples = 0
-        for data, target in dataset_loader:
+        for batch_idx, (data, target) in enumerate(train_set):
             numberOfSamples += data.size()[0]
             data, target = Variable(data), Variable(target)
-            optimizer.zero_grad()
+            model.zero_grad()
             output = model(data)
             loss = criterion(output, target)
             epoch_loss += loss.item()
             loss.backward()
-            average_gradients(model)
-            optimizer.step()
+            dist.send(tensor = torch.Tensor([rank]),dst = 0)
+            for param in model.parameters():
+                dist.send(tensor = param.grad.data, dst = 0)
+            for param in model.parameters():
+                dist.recv(tensor = param.data, src = 0)
+            # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_set.dataset), 100. * batch_idx / len(train_set), loss.item()))
+        dist.send(tensor = torch.Tensor([0]),dst = 0)
+        for param in model.parameters():
+            dist.recv(tensor = param.data, src = 0)
+        dist.barrier(group)
+        # print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
+    dist.send(tensor = torch.Tensor([-1]),dst = 0)
     t0 = time.monotonic()-t0
     t0 /= epochs
-
-        # print('Rank ', dist.get_rank(), ', epoch ', epoch, ': ', epoch_loss / num_batches)
-
-    # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss / num_batches, ', number of samples ', numberOfSamples)
-
     # if rank == 1:
     #     print(t0)
     # print('Rank ', dist.get_rank(), ', epoch_loss ', epoch_loss/ num_batches, ', number of samples ', numberOfSamples)
     execTime = torch.Tensor([t0])
     loss_w = torch.Tensor([epoch_loss * numberOfSamples / num_batches])
     numberOfSamples = torch.Tensor([numberOfSamples])
-    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=0)
-    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=0)
-    dist.all_reduce(execTime, op=dist.reduce_op.SUM, group=0)
-    if rank == 0:
-        print("\n C3 \n")
-        print(loss_w/numberOfSamples,',',execTime/size,' s')
+    dist.all_reduce(loss_w, op=dist.reduce_op.SUM, group=group)
+    dist.all_reduce(numberOfSamples, op=dist.reduce_op.SUM, group=group)
+    dist.all_reduce(execTime, op=dist.reduce_op.SUM, group=group)
+    if rank == 1:
+        print("\n C4 \n")
+        print(loss_w/numberOfSamples,',',execTime/(size-1))
+
+def runServer(model):
+    # model = Net()
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum = 0.9)
+    optimizer.zero_grad()
+    numberOfTimes = dist.get_world_size()-1
+    for param in model.parameters():
+        param.sum().backward()
+    tag = torch.zeros(1)
+    while True:
+        optimizer.zero_grad
+        src = dist.recv(tensor = tag)
+        # print("Reached ", src)
+        if tag[0] == 0:
+            for param in model.parameters():
+                dist.send(tensor = param.data, dst = src)
+        elif tag[0] == -1:
+            numberOfTimes -= 1
+            if numberOfTimes == 0:
+                # print("------------- Breaking ----------------")
+                break
+        else:
+            for param in model.parameters():
+                dist.recv(tensor = param.grad.data, src = src)
+            optimizer.step()
+            optimizer.zero_grad()
+            for param in model.parameters():
+                dist.send(tensor = param.data, dst = src)
+
+
+
+
+
 
 
 def main():
 
-    
     data_transform = transforms.Compose([
                                 transforms.Resize((32,32)),
                                 transforms.ToTensor()
                             ])
-    net = Net()
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
     
-    # net.cuda()
+    criterion = nn.CrossEntropyLoss()
+    # optimizer = optim.SGD(net.parameters(), lr=lr, momentum = 0.9)
+    model = Net()
     train_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
     dist.init_process_group(backend="mpi")
+    group = dist.new_group([i for i in range(1, dist.get_world_size())])
+    # size = dist.get_world_size()
+    # rank = dist.get_rank() 
+    if dist.get_rank() != 0:
+        runWorker(train_dataset, criterion, group, model)
+    else:
 
-    train_set, bsz = partition_dataset(train_dataset)
-    
-    run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
-    
+        runServer(model)
+    # train_set, bsz = partition_dataset(train_dataset)
+    # t0 = time.monotonic()
+    # run(dist.get_rank() , dist.get_world_size(), train_set,bsz, net, optimizer, criterion)
+    # t0 = time.monotonic()-t0
     # if dist.get_rank() == 0:
-    #     print("Final Weighted Loss - ",(weighted_loss/numberOfSamples), "The time is - ",t0)
-        # print("The time is - ",t0)
+    #     print("Final Weighted Loss - ",(weighted_loss/numberOfSamples))
+    #     print("The time is - ",t0)
     # test_dataset = data(csv_file = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/test.csv', root_dir = '/scratch/am9031/CSCI-GA.3033-023/lab3/kaggleamazon/train-jpg/',transform = data_transform)
 
 
 if __name__ == "__main__":
-    
-    # dist.init_process_group(backend="mpi", world_size=int(sys.argv[1]))
-
-    # dist.init_process_group(backend="mpi")
-    # size = dist.get_world_size()
-    # rank = dist.get_rank() 
-
     main()
